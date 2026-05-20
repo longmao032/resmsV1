@@ -1,0 +1,20 @@
+package com.guang.aiassistant.core.agent;
+
+public enum AgentConstant {
+    /**
+     * 初始状态
+     */
+    IDLE,
+    /**
+     * 运行状态
+     */
+    RUNNING,
+    /**
+     * 已完成状态
+     */
+    FINISHED,
+    /**
+     * 错误状态
+     */
+    ERROR
+}
