@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guang.trade.mapper.UserFavoriteMapper">
+
+    <select id="selectFavoriteHousePage" resultType="com.guang.trade.domain.vo.FavoriteHouseVO">
+        SELECT
+            house.id,
+            house.project_name as house_title,
+            CONCAT('/api/profile/', (SELECT file_key FROM tb_house_image WHERE house_id = house.id AND is_default = 1 LIMIT 1)) as cover,
+            house.house_type,
+            CASE
+                WHEN house.house_type = 3 THEN house.rent_price_fen / 100.0
+                ELSE house.total_price_fen / 1000000.0
+            END as price,
+            house.layout,
+            house.area,
+            COUNT(f.id) as fav_count,
+            MAX(f.create_time) as last_fav,
+            CASE WHEN COUNT(f.id) > 100 THEN 1 ELSE 0 END as is_hot
+        FROM tb_user_favorite f
+        JOIN tb_house house ON f.target_id = house.id AND f.target_type = 1
+        <where>
+            <if test="houseTitle != null and houseTitle != ''">
+                AND house.project_name LIKE CONCAT('%', #{houseTitle}, '%')
+            </if>
+        </where>
+        GROUP BY house.id
+        ORDER BY fav_count DESC
+    </select>
+
+    <select id="selectFansByHouseId" resultType="com.guang.trade.entity.AppUser">
+        SELECT u.*
+        FROM tb_user_favorite f
+        JOIN tb_app_user u ON f.app_user_id = u.id
+        WHERE f.target_id = #{houseId} AND f.target_type = 1
+        ORDER BY f.create_time DESC
+    </select>
+
+    <select id="selectFanVOsByHouseId" resultType="com.guang.trade.domain.vo.FavoriteFanVO">
+        SELECT
+            u.id,
+            u.nickname,
+            u.phone,
+            u.avatar_url as avatar,
+            f.create_time as favorite_time
+        FROM tb_user_favorite f
+        JOIN tb_app_user u ON f.app_user_id = u.id
+        WHERE f.target_id = #{houseId} AND f.target_type = 1
+        ORDER BY f.create_time DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guang.integration.mapper.UserNotificationMapper">
+    <select id="selectMyNotificationPage" resultType="com.guang.integration.domain.vo.UserNotificationVO">
+        SELECT
+            un.id,
+            un.notification_id,
+            un.is_read,
+            n.title,
+            n.content,
+            n.notice_type,
+            n.send_time,
+            n.sender_name,
+            n.router_path
+        FROM sys_user_notification un
+        LEFT JOIN sys_notification n ON un.notification_id = n.id
+        WHERE un.user_id = #{userId}
+          AND un.is_deleted = 0
+          AND n.withdraw_status = 0
+          AND n.is_deleted = 0
+        <if test="isRead != null">
+          AND un.is_read = #{isRead}
+        </if>
+        ORDER BY n.send_time DESC
+    </select>
+</mapper>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guang.trade.mapper.TransactionMapper">
+
+    <resultMap id="TransactionVOResultMap" type="com.guang.trade.domain.vo.TransactionVO">
+        <id property="id" column="id"/>
+        <result property="transactionNo" column="transaction_no"/>
+        <result property="dealPrice" column="deal_price"/>
+        <result property="deposit" column="deposit"/>
+        <result property="downPayment" column="down_payment"/>
+        <result property="loanAmount" column="loan_amount"/>
+        <result property="actualPaidAmount" column="actual_paid_amount"/>
+        <result property="paymentType" column="payment_type"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        
+        <association property="house" javaType="com.guang.trade.domain.vo.TransactionVO$HouseInfo">
+            <id property="id" column="house_id"/>
+            <result property="houseNo" column="house_no"/>
+            <result property="projectName" column="project_name"/>
+            <result property="layout" column="layout"/>
+            <result property="area" column="area"/>
+            <result property="coverImage" column="cover_image"/>
+        </association>
+        
+        <association property="customer" javaType="com.guang.trade.domain.vo.TransactionVO$CustomerInfo">
+            <id property="id" column="customer_id"/>
+            <result property="realName" column="customer_name"/>
+            <result property="phone" column="customer_phone"/>
+        </association>
+        
+        <association property="sales" javaType="com.guang.trade.domain.vo.TransactionVO$SalesInfo">
+            <id property="id" column="sales_id"/>
+            <result property="realName" column="sales_name"/>
+        </association>
+    </resultMap>
+
+    <sql id="selectTransactionVo">
+        SELECT 
+            t.*,
+            h.house_no, h.project_name, h.layout, h.area, 
+            (SELECT file_key FROM tb_house_image WHERE house_id = h.id AND is_default = 1 LIMIT 1) as cover_image,
+            c.real_name as customer_name, c.phone as customer_phone,
+            u.real_name as sales_name
+        FROM tb_transaction t
+        LEFT JOIN tb_house h ON t.house_id = h.id
+        LEFT JOIN tb_customer c ON t.customer_id = c.id
+        LEFT JOIN sys_user u ON t.sales_id = u.id
+    </sql>
+
+    <select id="selectTransactionPage" resultMap="TransactionVOResultMap">
+        <include refid="selectTransactionVo"/>
+        <where>
+            t.is_deleted = 0
+            <if test="query.transactionNo != null and query.transactionNo != ''">
+                AND t.transaction_no LIKE CONCAT('%', #{query.transactionNo}, '%')
+            </if>
+            <if test="query.status != null">
+                AND t.status = #{query.status}
+            </if>
+            <if test="query.customerId != null">
+                AND t.customer_id = #{query.customerId}
+            </if>
+            <if test="query.houseId != null">
+                AND t.house_id = #{query.houseId}
+            </if>
+        </where>
+        ORDER BY t.create_time DESC
+    </select>
+
+    <select id="selectTransactionDetail" resultMap="TransactionVOResultMap">
+        <include refid="selectTransactionVo"/>
+        WHERE t.id = #{id}
+    </select>
+
+    <select id="selectTransactionExportList" resultMap="TransactionVOResultMap">
+        <include refid="selectTransactionVo"/>
+        <where>
+            t.is_deleted = 0
+            <if test="query.transactionNo != null and query.transactionNo != ''">
+                AND t.transaction_no LIKE CONCAT('%', #{query.transactionNo}, '%')
+            </if>
+            <if test="query.status != null">
+                AND t.status = #{query.status}
+            </if>
+            <if test="query.customerId != null">
+                AND t.customer_id = #{query.customerId}
+            </if>
+            <if test="query.houseId != null">
+                AND t.house_id = #{query.houseId}
+            </if>
+        </where>
+        ORDER BY t.create_time DESC
+    </select>
+
+</mapper>

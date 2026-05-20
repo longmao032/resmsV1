@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guang.house.mapper.HouseMapper">
+    <resultMap id="HouseResultMap" type="com.guang.house.entity.House">
+        <id property="id" column="id" />
+        <result property="houseNo" column="house_no" />
+        <result property="projectId" column="project_id" />
+        <result property="projectName" column="project_name" />
+        <result property="houseType" column="house_type" />
+        <result property="buildingNo" column="building_no" />
+        <result property="unitNo" column="unit_no" />
+        <result property="roomNo" column="room_no" />
+        <result property="province" column="province" />
+        <result property="city" column="city" />
+        <result property="district" column="district" />
+        <result property="area" column="area" />
+        <result property="layout" column="layout" />
+        <result property="floor" column="floor" />
+        <result property="totalFloor" column="total_floor" />
+        <result property="orientation" column="orientation" />
+        <result property="decoration" column="decoration" />
+        <result property="tags" column="tags" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler" />
+        <result property="unitPriceFen" column="unit_price_fen" />
+        <result property="totalPriceFen" column="total_price_fen" />
+        <result property="rentPriceFen" column="rent_price_fen" />
+        <result property="description" column="description" />
+        <result property="salesId" column="sales_id" />
+        <result property="status" column="status" />
+        <result property="isDeleted" column="is_deleted" />
+        <result property="publishTime" column="publish_time" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+    <resultMap id="HousePageVOResultMap" type="com.guang.house.domain.vo.HousePageVO" extends="HouseResultMap">
+        <result property="distance" column="distance" />
+    </resultMap>
+</mapper>

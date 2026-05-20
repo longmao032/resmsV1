@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guang.trade.mapper.UserBrowseHistoryMapper">
+
+    <select id="selectFootprintPage" resultType="com.guang.trade.domain.vo.FootprintVO">
+        SELECT
+            h.id,
+            c.real_name as customer_name,
+            u.avatar_url as avatar,
+            house.project_name as house_title,
+            CONCAT('/api/profile/', (SELECT file_key FROM tb_house_image WHERE house_id = house.id AND is_default = 1 LIMIT 1)) as house_cover,
+            CASE
+                WHEN house.house_type = 1 THEN '新房'
+                WHEN house.house_type = 2 THEN '二手房'
+                ELSE '其他'
+            END as house_type,
+            house.house_no,
+            house.layout,
+            house.area,
+            CONCAT(house.floor, '层/共', house.total_floor, '层') as floor_label,
+            house.orientation,
+            house.decoration,
+            ROUND(house.unit_price_fen / 100, 0) as unit_price,
+            ROUND(house.total_price_fen / 1000000, 2) as total_price,
+            ROUND(house.rent_price_fen / 100, 0) as rent_price,
+            h.action_type,
+            h.duration,
+            h.interest_level,
+            h.content,
+            h.view_time
+        FROM tb_user_browse_history h
+        JOIN tb_app_user u ON h.app_user_id = u.id
+        LEFT JOIN tb_customer c ON u.id = c.app_user_id
+        LEFT JOIN tb_house house ON h.resource_id = house.id AND h.resource_type = 1
+        <where>
+            <if test="customerName != null and customerName != ''">
+                AND (c.real_name LIKE CONCAT('%', #{customerName}, '%') OR u.nickname LIKE CONCAT('%', #{customerName}, '%'))
+            </if>
+            <if test="actionType != null and actionType != ''">
+                AND h.action_type = #{actionType}
+            </if>
+        </where>
+        ORDER BY h.view_time DESC
+    </select>
+
+</mapper>

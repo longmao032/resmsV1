@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guang.house.mapper.ProjectMapper">
+
+    <resultMap id="ProjectPageVOResultMap" type="com.guang.house.domain.vo.ProjectPageVO">
+        <id property="id" column="id" />
+        <result property="projectNo" column="project_no" />
+        <result property="projectName" column="project_name" />
+        <result property="projectType" column="project_type" />
+        <result property="developer" column="developer" />
+        <result property="propertyCompany" column="property_company" />
+        <result property="province" column="province" />
+        <result property="city" column="city" />
+        <result property="district" column="district" />
+        <result property="address" column="address" />
+        <result property="totalHouseholds" column="total_households" />
+        <result property="propertyFee" column="property_fee" />
+        <result property="plotRatio" column="plot_ratio" />
+        <result property="greeningRate" column="greening_rate" />
+        <result property="tags" column="tags" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler" />
+        <result property="coverUrl" column="cover_url" />
+        <result property="coordinate" column="coordinate" />
+        <result property="longitude" column="longitude" />
+        <result property="latitude" column="latitude" />
+        <result property="status" column="status" />
+        <result property="isDeleted" column="is_deleted" />
+        <result property="creatorId" column="creator_id" />
+        <result property="commissionRate" column="commission_rate" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+        <result property="distance" column="distance" />
+        <result property="avgPrice" column="avgPrice" />
+        <result property="minArea" column="minArea" />
+        <result property="maxArea" column="maxArea" />
+        <result property="layoutSummary" column="layoutSummary" />
+        <result property="houseCount" column="houseCount" />
+    </resultMap>
+
+</mapper>

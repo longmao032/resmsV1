@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guang.finance.mapper.PaymentMapper">
+
+    <select id="selectPaymentPage" resultType="com.guang.finance.domain.vo.PaymentVO">
+        SELECT 
+            p.*,
+            t.transaction_no,
+            u1.real_name as finance_name,
+            u2.real_name as audit_name
+        FROM tb_payment p
+        LEFT JOIN tb_transaction t ON p.transaction_id = t.id
+        LEFT JOIN sys_user u1 ON p.finance_id = u1.id
+        LEFT JOIN sys_user u2 ON p.audit_user_id = u2.id
+        <where>
+            p.is_deleted = 0
+            <if test="query.transactionId != null">
+                AND p.transaction_id = #{query.transactionId}
+            </if>
+            <if test="query.transactionNo != null and query.transactionNo != ''">
+                AND t.transaction_no LIKE CONCAT('%', #{query.transactionNo}, '%')
+            </if>
+            <if test="query.paymentType != null">
+                AND p.payment_type = #{query.paymentType}
+            </if>
+            <if test="query.paymentStatus != null">
+                AND p.payment_status = #{query.paymentStatus}
+            </if>
+        </where>
+        ORDER BY p.create_time DESC
+    </select>
+
+    <select id="selectPaymentExportList" resultType="com.guang.finance.domain.vo.PaymentVO">
+        SELECT
+            p.*,
+            t.transaction_no,
+            u1.real_name as finance_name,
+            u2.real_name as audit_name
+        FROM tb_payment p
+        LEFT JOIN tb_transaction t ON p.transaction_id = t.id
+        LEFT JOIN sys_user u1 ON p.finance_id = u1.id
+        LEFT JOIN sys_user u2 ON p.audit_user_id = u2.id
+        <where>
+            p.is_deleted = 0
+            <if test="query.transactionId != null">
+                AND p.transaction_id = #{query.transactionId}
+            </if>
+            <if test="query.transactionNo != null and query.transactionNo != ''">
+                AND t.transaction_no LIKE CONCAT('%', #{query.transactionNo}, '%')
+            </if>
+            <if test="query.paymentType != null">
+                AND p.payment_type = #{query.paymentType}
+            </if>
+            <if test="query.paymentStatus != null">
+                AND p.payment_status = #{query.paymentStatus}
+            </if>
+        </where>
+        ORDER BY p.create_time DESC
+    </select>
+</mapper>

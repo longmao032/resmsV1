@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guang.trade.mapper.CustomerFollowUpRecordMapper">
+
+    <resultMap id="followUpVOMap" type="com.guang.trade.domain.vo.FollowUpVO">
+        <id property="id" column="id" />
+        <result property="customerId" column="customer_id" />
+        <result property="type" column="type" />
+        <result property="houseId" column="house_id" />
+        <result property="houseTitle" column="house_title" />
+        <result property="houseAddress" column="house_address" />
+        <result property="salesId" column="sales_id" />
+        <result property="salesName" column="sales_name" />
+        <result property="customerFeedback" column="customer_feedback" />
+        <result property="content" column="content" />
+        <result property="newIntentionLevel" column="new_intention_level" />
+        <result property="followDate" column="follow_date" />
+        <result property="status" column="status" />
+        <result property="followAdvice" column="follow_advice" />
+        <result property="cancelReason" column="cancel_reason" />
+        <result property="createTime" column="create_time" />
+    </resultMap>
+
+    <select id="selectFollowUpPage" resultMap="followUpVOMap">
+        SELECT
+            f.id,
+            f.customer_id,
+            f.type,
+            f.house_id,
+            h.project_name AS house_title,
+            CONCAT_WS(' ', h.city, h.district, h.building_no, h.unit_no, h.room_no) AS house_address,
+            f.sales_id,
+            u.real_name AS sales_name,
+            f.customer_feedback,
+            f.new_intention_level,
+            f.view_time AS follow_date,
+            f.status,
+            f.follow_advice,
+            f.cancel_reason,
+            f.create_time
+        FROM tb_view_record f
+        LEFT JOIN sys_user u ON f.sales_id = u.id
+        LEFT JOIN tb_house h ON f.house_id = h.id
+        <where>
+            f.is_deleted = 0
+            <if test="customerId != null">
+                AND f.customer_id = #{customerId}
+            </if>
+        </where>
+        ORDER BY f.view_time DESC
+    </select>
+
+    <select id="selectFollowUpByCustomerId" resultMap="followUpVOMap">
+        SELECT
+            f.id,
+            f.customer_id,
+            f.type,
+            f.house_id,
+            h.project_name AS house_title,
+            CONCAT_WS(' ', h.city, h.district, h.building_no, h.unit_no, h.room_no) AS house_address,
+            f.sales_id,
+            u.real_name AS sales_name,
+            f.customer_feedback,
+            f.new_intention_level,
+            f.view_time AS follow_date,
+            f.status,
+            f.follow_advice,
+            f.cancel_reason,
+            f.create_time
+        FROM tb_view_record f
+        LEFT JOIN sys_user u ON f.sales_id = u.id
+        LEFT JOIN tb_house h ON f.house_id = h.id
+        WHERE f.customer_id = #{customerId}
+          AND f.is_deleted = 0
+        ORDER BY f.view_time DESC
+    </select>
+
+    <select id="selectAppointmentsByCustomerId" resultMap="followUpVOMap">
+        SELECT
+            f.id,
+            f.customer_id,
+            f.type,
+            f.house_id,
+            h.project_name AS house_title,
+            CONCAT_WS(' ', h.city, h.district, h.building_no, h.unit_no, h.room_no) AS house_address,
+            f.sales_id,
+            u.real_name AS sales_name,
+            f.customer_feedback,
+            f.new_intention_level,
+            f.view_time AS follow_date,
+            f.status,
+            f.follow_advice,
+            f.cancel_reason,
+            f.create_time
+        FROM tb_view_record f
+        LEFT JOIN sys_user u ON f.sales_id = u.id
+        LEFT JOIN tb_house h ON f.house_id = h.id
+        WHERE f.customer_id = #{customerId}
+          AND f.status = 1
+          AND f.is_deleted = 0
+          AND f.view_time >= NOW()
+        ORDER BY f.view_time ASC
+    </select>
+
+</mapper>
