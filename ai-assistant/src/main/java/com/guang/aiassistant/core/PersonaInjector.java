@@ -3,6 +3,7 @@ package com.guang.aiassistant.core;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.guang.aiassistant.client.EstateSystemClient;
+import com.guang.aiassistant.model.SearchState;
 import com.guang.aiassistant.service.SearchStateService;
 import com.guang.aiassistant.tool.CustomerProfileTool;
 import org.slf4j.Logger;
@@ -11,8 +12,8 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
- * 画像隐藏式注入器 —— 在 PlanningFlow 编排层静默拉取客户画像，
- * 注入到 Agent System Prompt 尾部，省去 LLM 显式调用 getCustomerProfile 的 ReAct 往返。
+ * 画像注入器 —— 在请求层静默拉取客户画像，缓存到 PG，
+ * 并预装 ThreadLocal 供计算引擎使用。
  *
  * <p>两级缓存：
  * <ul>
@@ -39,35 +40,39 @@ public class PersonaInjector {
     }
 
     /**
-     * 静默拉取画像，预装 ThreadLocal，持久化 personaText + personaJson。
+     * 拉取画像写入缓存和 ThreadLocal。返回拆包后的 data 节点，
+     * 调用方直接提取字段用于搜索参数补全，无需再解析或读 ThreadLocal。
      *
      * @param userId    当前用户 ID
      * @param sessionId 会话 ID
      * @param queryCity 用户本轮查询的目标城市（用于跨城判断），可为 null
-     * @return 格式化画像文本（用于注入 System Prompt），或 null（降级无画像运行）
+     * @return 拆包后的 data 节点，或 null（降级无画像运行）
      */
     @Nullable
-    public String preloadAndInject(String userId, String sessionId, @Nullable String queryCity) {
-        SearchStateService.State state = stateService.getState(sessionId);
+    public JsonNode preloadAndInject(String userId, String sessionId, @Nullable String queryCity) {
+        SearchState state = stateService.getState(sessionId);
 
         // ---- 分支 A：已成功注入，复用 PG 缓存 ----
         if (state.profileFetched() && state.personaText() != null) {
             log.info("PersonaInjector 复用缓存: sessionId={}", sessionId);
-            restoreThreadLocalFromCache(state);
-            return state.personaText();
+            JsonNode cached = restoreFromCache(state);
+            if (cached != null) return cached;
+            // 缓存解析失败，降级为重新拉取
         }
 
         // ---- 分支 B：首次尝试 或 之前被跳过（跨城/无数据），重新拉取 ----
 
         // B1. 调远程 API
         JsonNode profileJson;
+        long start = System.currentTimeMillis();
         try {
             profileJson = client.getUserProfile(userId);
         } catch (Exception e) {
-            log.warn("PersonaInjector 画像拉取失败，降级无画像运行: {}", e.getMessage());
-            stateService.markProfileFetched(sessionId, false, null, null);
+            log.warn("PersonaInjector 画像拉取失败，降级无画像运行（保留旧缓存）: {}", e.getMessage());
+            // 不写入缓存：保留已有的有效缓存，下次请求重试
             return null;
         }
+        long elapsed = System.currentTimeMillis() - start;
 
         // B2. 空数据检查
         if (profileJson == null || isEffectivelyEmpty(profileJson)) {
@@ -76,132 +81,57 @@ public class PersonaInjector {
             return null;
         }
 
-        // B3. 跨城检查 — 不注入，记录 personaText=null 标记为"跳过"
+        // B3. 跨城检查 — 不注入，不覆写缓存（保留原有画像供回城时复用）
         String profileCity = extractCity(profileJson);
         if (queryCity != null && !queryCity.isBlank()
                 && profileCity != null && !profileCity.equals(queryCity)) {
             log.info("PersonaInjector 跨城跳过: 画像城市={}, 查询城市={}", profileCity, queryCity);
-            stateService.markProfileFetched(sessionId, false, null, null);
+            // 不写入缓存：避免摧毁原城市的画像缓存
             return null;
         }
 
-        // B4. 预装 ThreadLocal（供 calculateLinkedPrice 使用）
-        profileTool.preloadProfile(profileJson);
+        // B4. 拆包：取 data 节点，外部 API 返回 { "data": { ... } }
+        JsonNode data = profileJson.has("data") ? profileJson.get("data") : profileJson;
 
-        // B5. 格式化文本
-        String personaText = formatPersona(profileJson);
-        boolean hasData = hasValidData(profileJson);
+        // B5. 预装 ThreadLocal（供 calculateLinkedPrice 使用）
+        profileTool.preloadProfile(data);
 
-        // B6. 持久化 text + json
-        stateService.markProfileFetched(sessionId, hasData, personaText,
+        // B6. 检查是否有有效数据
+        boolean hasData = hasValidData(data);
+
+        // B7. 持久化 text + json（personaText 存 JSON 字符串保证缓存可用）
+        stateService.markProfileFetched(sessionId, hasData, profileJson.toString(),
                 profileJson.toString());
 
-        log.info("PersonaInjector 注入成功: sessionId={}, city={}, hasData={}",
-                sessionId, profileCity, hasData);
-        return personaText;
+        log.info("PersonaInjector 注入成功: sessionId={}, city={}, hasData={}, cost={}ms",
+                sessionId, profileCity, hasData, elapsed);
+        return data;
     }
 
     // ---- 内部方法 ----
 
     /**
-     * 从 PG 缓存还原 ThreadLocal，供多轮对话中 calculateLinkedPrice 使用。
+     * 从 PG 缓存还原 ThreadLocal 并返回 data 节点，供 calculateLinkedPrice 使用。
      */
-    private void restoreThreadLocalFromCache(SearchStateService.State state) {
+    @Nullable
+    private JsonNode restoreFromCache(SearchState state) {
         String cachedJson = state.personaJson();
         if (cachedJson != null && !cachedJson.isBlank()) {
             try {
-                JsonNode node = MAPPER.readTree(cachedJson);
-                profileTool.preloadProfile(node);
+                JsonNode root = MAPPER.readTree(cachedJson);
+                JsonNode data = root.has("data") ? root.get("data") : root;
+                profileTool.preloadProfile(data);
+                return data;
             } catch (Exception e) {
                 log.warn("PersonaInjector 还原画像 JSON 失败: {}", e.getMessage());
             }
         }
-    }
-
-    /**
-     * 将画像 JSON 格式化为注入 System Prompt 的文本块。
-     */
-    private String formatPersona(JsonNode data) {
-        JsonNode d = data.has("data") ? data.get("data") : data;
-
-        StringBuilder sb = new StringBuilder("## 当前用户画像（系统自动获取）\n\n");
-
-        // 紧迫度
-        sb.append("- 购房紧迫度: ").append(textOrDefault(d, "urgencyLevel", "LOW")).append("\n");
-
-        // 硬性约束
-        JsonNode hard = d.get("hardConstraints");
-        if (hard != null) {
-            sb.append("- 意向城市: ").append(textOrDefault(hard, "city", "未知")).append("\n");
-            sb.append("- 核心区域: ").append(arrayToStr(hard.get("districts"))).append("\n");
-            sb.append("- 预算区间: ").append(numOrDefault(hard, "minPriceWan", 0))
-                    .append(" ~ ").append(numOrDefault(hard, "maxPriceWan", 0)).append(" 万元\n");
-            sb.append("- 面积区间: ").append(numOrDefault(hard, "minArea", 0))
-                    .append(" ~ ").append(numOrDefault(hard, "maxArea", 0)).append(" ㎡\n");
-            sb.append("- 偏好户型: ").append(arrayToStr(hard.get("layoutRooms"))).append(" 室\n");
-        }
-
-        // 软偏好
-        JsonNode soft = d.get("softPreferences");
-        if (soft != null) {
-            sb.append("- 房屋类型: ").append(textOrDefault(soft, "preferredHouseType", "未知")).append("\n");
-            sb.append("- 装修标准: ").append(textOrDefault(soft, "preferredDecoration", "未知")).append("\n");
-        }
-
-        // 场景标签
-        sb.append("- 场景标签: ").append(arrayToStr(d.get("scenarioTags"))).append("\n");
-
-        // 单价锚点
-        double anchor = numOrDefault(d, "unitPriceAnchorWan", 0);
-        sb.append("- 价格锚点: ").append(String.format("%.2f", anchor)).append(" 万元/㎡\n");
-
-        // 区县均价指数
-        JsonNode districtIndex = d.get("districtPriceIndex");
-        if (districtIndex != null && districtIndex.isObject()) {
-            sb.append("- 区县均价指数: ");
-            var it = districtIndex.fields();
-            boolean first = true;
-            while (it.hasNext()) {
-                var field = it.next();
-                if (!first) sb.append(", ");
-                sb.append(field.getKey()).append(" ")
-                        .append(String.format("%.2f", field.getValue().asDouble()));
-                first = false;
-            }
-            sb.append(" 万元/㎡\n");
-        }
-
-        // Top5 意向房源（精简）
-        JsonNode topHouses = d.get("topIntentHouses");
-        if (topHouses != null && topHouses.isArray() && !topHouses.isEmpty()) {
-            sb.append("- 意向房源: ");
-            int count = Math.min(topHouses.size(), 3);
-            for (int i = 0; i < count; i++) {
-                JsonNode h = topHouses.get(i);
-                if (i > 0) sb.append("；");
-                sb.append(textOrDefault(h, "title", ""))
-                        .append("(").append(textOrDefault(h, "district", ""))
-                        .append(", ").append(numOrDefault(h, "priceWan", 0)).append("万)");
-            }
-            sb.append("\n");
-        }
-
-        sb.append("\n> 以上画像数据已自动获取，你无需也无法调用 getCustomerProfile。\n");
-        sb.append(">\n");
-        sb.append("> **calculateLinkedPrice 调用规则：**\n");
-        sb.append("> - 如果用户明确提出的预算/面积/区域等条件与以上画像**冲突**"
-                + "（如预算超出画像范围、区域不在画像核心区域），优先遵循用户意愿，"
-                + "并应调用 calculateLinkedPrice 重新计算联动价格。\n");
-        sb.append("> - 如果用户的条件与画像**不冲突**（如仅问询，未提出偏离画像的新约束），"
-                + "直接用画像回答即可，不需要调用 calculateLinkedPrice。\n");
-
-        return sb.toString();
+        return null;
     }
 
     private boolean hasValidData(JsonNode data) {
-        JsonNode d = data.has("data") ? data.get("data") : data;
-        double anchor = numOrDefault(d, "unitPriceAnchorWan", 0);
-        JsonNode topHouses = d.get("topIntentHouses");
+        double anchor = numOrDefault(data, "unitPriceAnchorWan", 0);
+        JsonNode topHouses = data.get("topIntentHouses");
         boolean hasHouses = topHouses != null && topHouses.isArray() && !topHouses.isEmpty();
         return anchor > 0 || hasHouses;
     }
@@ -227,23 +157,8 @@ public class PersonaInjector {
 
     // ---- 工具方法 ----
 
-    private static String textOrDefault(JsonNode node, String field, String def) {
-        return (node != null && node.has(field) && !node.get(field).isNull())
-                ? node.get(field).asText() : def;
-    }
-
     private static double numOrDefault(JsonNode node, String field, double def) {
         return (node != null && node.has(field) && !node.get(field).isNull())
                 ? node.get(field).asDouble() : def;
-    }
-
-    private static String arrayToStr(JsonNode arrayNode) {
-        if (arrayNode == null || !arrayNode.isArray() || arrayNode.isEmpty()) return "未知";
-        StringBuilder sb = new StringBuilder();
-        for (JsonNode item : arrayNode) {
-            if (!sb.isEmpty()) sb.append("、");
-            sb.append(item.asText());
-        }
-        return sb.toString();
     }
 }

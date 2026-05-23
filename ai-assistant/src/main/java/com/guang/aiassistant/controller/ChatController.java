@@ -4,8 +4,8 @@ import com.guang.aiassistant.core.UserContext;
 import com.guang.aiassistant.model.ApiResult;
 import com.guang.aiassistant.model.ChatRequest;
 import com.guang.aiassistant.model.RecommendationResponse;
-import com.guang.aiassistant.service.ChatResult;
-import com.guang.aiassistant.service.ChatServiceImpl;
+import com.guang.aiassistant.model.ChatResult;
+import com.guang.aiassistant.service.ChatService;
 import com.guang.aiassistant.service.DataSyncService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -20,10 +20,10 @@ import java.util.UUID;
 @RequestMapping("/api")
 public class ChatController {
 
-    private final ChatServiceImpl chatService;
+    private final ChatService chatService;
     private final DataSyncService dataSyncService;
 
-    public ChatController(ChatServiceImpl chatService, DataSyncService dataSyncService) {
+    public ChatController(ChatService chatService, DataSyncService dataSyncService) {
         this.chatService = chatService;
         this.dataSyncService = dataSyncService;
     }

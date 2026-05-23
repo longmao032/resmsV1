@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
@@ -36,9 +34,8 @@ public class CitySearchTool {
         }
     }
 
-    @Tool(description = "按关键词检索城市（支持城市名/别名模糊匹配），返回匹配的城市列表及各城市下辖的区县")
     public String searchCities(
-            @ToolParam(description = "城市名关键词，如'深圳'、'浦东'") String keyword) {
+            String keyword) {
         if (keyword == null || keyword.isBlank()) {
             return "请输入城市名关键词。";
         }
@@ -56,9 +53,8 @@ public class CitySearchTool {
                 .collect(Collectors.joining("\n---\n"));
     }
 
-    @Tool(description = "查询指定城市下辖的所有区县列表")
     public String listDistricts(
-            @ToolParam(description = "城市名全称，如'深圳市'、'浦东新区'") String city) {
+            String city) {
         if (city == null || city.isBlank()) {
             return "请输入城市名称。";
         }
@@ -82,10 +78,9 @@ public class CitySearchTool {
                 cityName, data.districts().size(), String.join("\n", data.districts()));
     }
 
-    @Tool(description = "校验城市+区县名称是否有效，返回匹配的城市全名和区县名")
     public String validateCityDistrict(
-            @ToolParam(description = "城市名，可模糊匹配") String city,
-            @ToolParam(description = "区县名，可模糊匹配") String district) {
+            String city,
+            String district) {
         if (city == null || city.isBlank()) {
             return "请输入城市名称。";
         }

@@ -5,8 +5,7 @@ import com.guang.aiassistant.client.EstateSystemClient;
 import com.guang.aiassistant.core.UserContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -136,16 +135,13 @@ public class CustomerProfileTool {
         }
     }
 
-    @Tool(description = "六大因子联动价格重算引擎（UP Engine）。当用户口头提出了与画像不同的区域、面积、房屋类型等新条件时，" +
-            "调用此工具根据画像中的单价锚点和区县均价指数，自动联动重算最合理的总价预算区间。" +
-            "必须先调用 getCustomerProfile 获取画像后才能使用此工具。")
     public String calculateLinkedPrice(
-            @ToolParam(description = "用户口头提出的目标区域，如'宝安区'。不变时传null") String targetDistrict,
-            @ToolParam(description = "用户口头提出的目标面积（㎡）。不变时传null") Double targetArea,
-            @ToolParam(description = "用户口头提出的居室数，如 3 或 4。不变时传null") Integer targetRooms,
-            @ToolParam(description = "用户口头提出的房屋类型: new_house/resale/apartment/villa。不变时传null") String targetHouseType,
-            @ToolParam(description = "用户是否明确要求学区房: true/false。不确定时传null") Boolean requireSchool,
-            @ToolParam(description = "用户是否明确要求近地铁: true/false。不确定时传null") Boolean requireSubway) {
+            String targetDistrict,
+            Double targetArea,
+            Integer targetRooms,
+            String targetHouseType,
+            Boolean requireSchool,
+            Boolean requireSubway) {
 
         JsonNode profile = cachedProfile.get();
         if (profile == null) {
@@ -286,5 +282,20 @@ public class CustomerProfileTool {
     public void clearAll() {
         lastHasData.remove();
         cachedProfile.remove();
+    }
+
+    /**
+     * 将画像中的房屋类型字符串映射为搜索接口的 Integer 值。
+     * "new_house" → 1, "resale" → 2, "rental" → 3, 其他 → null
+     */
+    @Nullable
+    public static Integer houseTypeToInt(@Nullable String type) {
+        if (type == null) return null;
+        return switch (type) {
+            case "new_house" -> 1;
+            case "resale" -> 2;
+            case "rental" -> 3;
+            default -> null;
+        };
     }
 }

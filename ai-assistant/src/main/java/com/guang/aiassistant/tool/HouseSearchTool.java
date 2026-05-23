@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.filter.Filter;
@@ -31,6 +29,25 @@ public class HouseSearchTool {
     private static final Logger log = LoggerFactory.getLogger(HouseSearchTool.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
+    /** 已知标签词库 — 从项目/房源 tags 元数据中提取的高频搜索偏好词 */
+    public static final List<String> KNOWN_TAGS = List.of(
+            "学区房", "名校学区", "带学位",
+            "豪宅顶奢", "顶配豪宅", "江景豪宅", "老牌豪宅", "豪宅",
+            "一线海景", "海景视野", "环幕海景", "海景",
+            "一线江景", "江景", "一线湖景", "湖景",
+            "地铁沿线", "双地铁", "双地铁口", "地铁上盖", "近地铁", "地铁",
+            "精装空置", "精装", "拎包入住", "家电齐全", "家电全",
+            "现房", "现房销售",
+            "低密度", "大平层",
+            "满五唯一",
+            "环境优美", "环境安静", "安静舒适", "园林景观",
+            "配套成熟", "配套醇熟", "交通便利",
+            "高性价比", "低总价", "刚需首选",
+            "超大商圈", "近购物中心", "万象天地", "COCOCity",
+            "私家泳池", "带私家花园", "超高层", "楼王单位",
+            "红本在手", "红本无贷", "高赠送", "全景视野", "全景飘窗"
+    );
+
     private final VectorStore vectorStore;
     private final JdbcTemplate jdbcTemplate;
     private final String tableName;
@@ -46,27 +63,19 @@ public class HouseSearchTool {
         this.tableName = tableName;
     }
 
-    // ==================== @Tool 方法 ====================
+    // ==================== 公开方法 ====================
 
-    @Tool(description = """
-            搜索房源，支持三种模式：
-            - precise：精准匹配结构化条件（城市/区域/户型/面积/价格/类型），速度最快，适合明确的筛选条件
-            - semantic：自然语言语义搜索，适合模糊需求描述（如"适合养狗的安静小区"）
-            - hybrid：结构化条件 + 语义偏好混合搜索（默认）
-
-            重要：不限制的条件不要传参！例如不需要限制户型就别传 layout，
-            不需要限制价格就别传 minPrice/maxPrice。不要传 0、空字符串、"0室0厅" 等占位值。""")
     public String queryHouses(
-            @ToolParam(description = "搜索模式: precise/semantic/hybrid，默认 hybrid。无特殊需求时不传") String searchMode,
-            @ToolParam(description = "城市，如'深圳'。不限制时不传") String city,
-            @ToolParam(description = "区域，如'南山区'。不限制时不传") String district,
-            @ToolParam(description = "户型，如'3室2厅'。用户未指定时不传，不要传'0室0厅'") String layout,
-            @ToolParam(description = "最小面积(㎡)。不限制时不传，不要传0") Integer minArea,
-            @ToolParam(description = "最大面积(㎡)。不限制时不传") Integer maxArea,
-            @ToolParam(description = "最低总价(万元)。不限制时不传，不要传0") Integer minPrice,
-            @ToolParam(description = "最高总价(万元)。不限制时不传") Integer maxPrice,
-            @ToolParam(description = "类型：1新房 2二手房 3租房。不限制时不传") Integer houseType,
-            @ToolParam(description = "自然语言偏好描述，仅 semantic/hybrid 模式使用。不限制时不传") String query) {
+            String searchMode,
+            String city,
+            String district,
+            String layout,
+            Integer minArea,
+            Integer maxArea,
+            Integer minPrice,
+            Integer maxPrice,
+            Integer houseType,
+            String query) {
 
         // 名称规范化："深圳"→"深圳市"、"南山"→"南山区"，对齐 metadata 中的存储格式
         city = normalizeCity(city);
@@ -83,6 +92,15 @@ public class HouseSearchTool {
         if (minPrice != null && minPrice <= 0) minPrice = null;
         if (maxPrice != null && maxPrice >= 99999) maxPrice = null;
 
+        // 无任何过滤条件 → 降级热门推荐，避免全库跨城污染
+        if (city == null && district == null && houseType == null
+                && minArea == null && maxArea == null && minPrice == null && maxPrice == null) {
+            String popular = fallbackPopularHouses(20);
+            List<Document> fallbackDocs = lastSearchDocs.get();
+            lastQueryCount.set(fallbackDocs != null ? fallbackDocs.size() : 0);
+            return popular;
+        }
+
         recordQueryParams(searchMode, city, district, layout, minArea, maxArea, minPrice, maxPrice, houseType, 0);
 
         String result = switch (searchMode != null ? searchMode : "hybrid") {
@@ -93,15 +111,15 @@ public class HouseSearchTool {
                     minPrice, maxPrice, houseType, query);
         };
 
-        lastQueryCount.set(result.equals("未找到匹配的房源。") || result.equals("查询异常，请稍后重试。") ? 0 : 1);
+        List<Document> resultDocs = lastSearchDocs.get();
+        lastQueryCount.set(resultDocs != null ? resultDocs.size() : 0);
         return result;
     }
 
-    @Tool(description = "搜索楼盘项目。按名称/城市/区域筛选，返回项目摘要")
     public String searchProjects(
-            @ToolParam(description = "项目名称关键词") String keyword,
-            @ToolParam(description = "城市") String city,
-            @ToolParam(description = "区域") String district) {
+            String keyword,
+            String city,
+            String district) {
 
         city = normalizeCity(city);
         district = normalizeDistrict(district);
@@ -155,33 +173,116 @@ public class HouseSearchTool {
         return filtered.stream().map(this::formatProjectResult).collect(Collectors.joining("\n"));
     }
 
+    // ==================== 管道专用：返回原始 Document 列表 ====================
+
+    /**
+     * 搜索管道专用方法 — 返回原始 Document 列表，不走 ThreadLocal，不格式化。
+     *
+     * @param relaxedFilters true 时跳过价格/面积后置过滤（降级时使用）
+     */
+    public List<Document> queryHousesRaw(
+            String city, String district, String layout,
+            Integer minArea, Integer maxArea,
+            Integer minPrice, Integer maxPrice,
+            Integer houseType, String query,
+            boolean relaxedFilters) {
+
+        city = normalizeCity(city);
+        district = normalizeDistrict(district);
+        if (district != null && district.equals(city)) district = null;
+        layout = sanitizeLayout(layout);
+        if (minArea != null && minArea <= 0) minArea = null;
+        if (maxArea != null && maxArea >= 10000) maxArea = null;
+        if (minPrice != null && minPrice <= 0) minPrice = null;
+        if (maxPrice != null && maxPrice >= 99999) maxPrice = null;
+
+        // lambda 捕获用的 final 副本
+        final String fCity = city;
+        final String fDistrict = district;
+        final String fLayout = layout;
+        final Integer fMinArea = minArea, fMaxArea = maxArea;
+        final Integer fMinPrice = minPrice, fMaxPrice = maxPrice;
+
+        // 构建 metadata filter
+        FilterExpressionBuilder b = new FilterExpressionBuilder();
+        FilterExpressionBuilder.Op cur = b.eq("type", "house");
+        if (fCity != null && !fCity.isBlank()) cur = b.and(cur, b.eq("city", fCity));
+        if (fDistrict != null && !fDistrict.isBlank()) cur = b.and(cur, b.eq("district", fDistrict));
+        if (houseType != null) cur = b.and(cur, b.eq("houseType", houseType));
+
+        // 查询文本
+        StringBuilder q = new StringBuilder();
+        if (fCity != null) q.append(fCity).append(" ");
+        if (fDistrict != null) q.append(fDistrict).append(" ");
+        q.append("房产");
+        if (query != null) q.append(" ").append(query);
+        if (fLayout != null) q.append(" ").append(fLayout);
+
+        List<Document> docs;
+        try {
+            docs = vectorStore.similaritySearch(
+                    SearchRequest.builder()
+                            .query(q.toString())
+                            .filterExpression(cur.build())
+                            .topK(150)
+                            .similarityThreshold(0.15)
+                            .build());
+        } catch (Exception e) {
+            log.warn("queryHousesRaw 查询异常: {}", e.getMessage());
+            return List.of();
+        }
+
+        // 后置过滤
+        var filtered = docs.stream()
+                .filter(d -> fLayout == null || fLayout.isBlank() || matchesLayout(d, fLayout))
+                .filter(d -> relaxedFilters || areaOverlap(d, fMinArea, fMaxArea))
+                .filter(d -> relaxedFilters || priceOverlap(d, fMinPrice, fMaxPrice))
+                .toList();
+
+        return new ArrayList<>(filtered);
+    }
+
     // ==================== 模式一：Precise 精准查询 ====================
 
     private String preciseSearch(String city, String district, String layout,
                                   Integer minArea, Integer maxArea,
                                   Integer minPrice, Integer maxPrice,
                                   Integer houseType) {
-        // 全部走 metadata JSONB 路径，不依赖物理列（物理列由 SchemaMigration 异步添加）
         StringBuilder sql = new StringBuilder(
-                "SELECT content, metadata FROM " + tableName + " WHERE metadata->>'type' = 'house'");
+                "SELECT content, metadata FROM " + tableName + " WHERE type = 'house'");
         List<Object> params = new ArrayList<>();
 
         if (city != null && !city.isBlank()) {
-            sql.append(" AND metadata->>'city' = ?");
+            sql.append(" AND city = ?");
             params.add(city);
         }
         if (district != null && !district.isBlank()) {
-            sql.append(" AND metadata->>'district' = ?");
+            sql.append(" AND district = ?");
             params.add(district);
         }
         if (houseType != null) {
-            sql.append(" AND metadata->>'houseType' = ?");
-            params.add(String.valueOf(houseType));
+            sql.append(" AND (metadata->>'houseType')::int = ?");
+            params.add(houseType);
         }
-        // price/area 不在此过滤，metadata 中 price_num/area_min 可能不存在 → Java 层后置过滤
+        if (minPrice != null) {
+            sql.append(" AND price_num >= ?");
+            params.add(minPrice);
+        }
+        if (maxPrice != null) {
+            sql.append(" AND price_num <= ?");
+            params.add(maxPrice);
+        }
+        if (minArea != null) {
+            sql.append(" AND area_max >= ?");
+            params.add(minArea);
+        }
+        if (maxArea != null) {
+            sql.append(" AND area_min <= ?");
+            params.add(maxArea);
+        }
 
         sql.append(" LIMIT ?");
-        params.add(200);  // 扩大取数以补偿后置过滤
+        params.add(100);  // 缩减取数，价格和面积已在数据库级过滤，仅 layout 需后置匹配
 
         List<Document> docs;
         try {
@@ -194,11 +295,9 @@ public class HouseSearchTool {
             return "查询异常，请稍后重试。";
         }
 
-        // 后置过滤：layout(文本) + area(文本解析) + price(文本解析)
+        // 仅后置过滤 layout(文本)
         var filtered = docs.stream()
                 .filter(d -> layout == null || layout.isBlank() || matchesLayout(d, layout))
-                .filter(d -> areaOverlap(d, minArea, maxArea))
-                .filter(d -> priceOverlap(d, minPrice, maxPrice))
                 .limit(20)
                 .toList();
 
@@ -289,13 +388,29 @@ public class HouseSearchTool {
                 .filter(d -> layout == null || layout.isBlank() || matchesLayout(d, layout))
                 .filter(d -> areaOverlap(d, minArea, maxArea))
                 .filter(d -> priceOverlap(d, minPrice, maxPrice))
-                .limit(20)
                 .toList();
 
-        lastSearchDocs.set(filtered);
+        // 标签感知排序：metadata.tags 匹配用户查询关键词的文档优先
+        List<String> tagKeywords = extractTagKeywords(query);
+        List<Document> sorted;
+        if (!tagKeywords.isEmpty() && !filtered.isEmpty()) {
+            var tagMatched = filtered.stream()
+                    .filter(d -> matchesAnyTag(d, tagKeywords))
+                    .toList();
+            var rest = filtered.stream()
+                    .filter(d -> !matchesAnyTag(d, tagKeywords))
+                    .toList();
+            sorted = new ArrayList<>(tagMatched);
+            sorted.addAll(rest);
+            log.info("标签匹配: {} 个关键词命中 {} / {} 条结果", tagKeywords, tagMatched.size(), filtered.size());
+        } else {
+            sorted = new ArrayList<>(filtered);
+        }
 
-        if (filtered.isEmpty()) return "未找到匹配的房源。";
-        return filtered.stream().map(this::formatHouseResult).collect(Collectors.joining("\n"));
+        lastSearchDocs.set(sorted.stream().limit(20).toList());
+
+        if (sorted.isEmpty()) return "未找到匹配的房源。";
+        return sorted.stream().limit(20).map(this::formatHouseResult).collect(Collectors.joining("\n"));
     }
 
     // ==================== 后置过滤 ====================
@@ -303,6 +418,23 @@ public class HouseSearchTool {
     private boolean matchesLayout(Document doc, String layout) {
         String roomType = stringMeta(doc, "roomType");
         return roomType != null && roomType.contains(layout);
+    }
+
+    /**
+     * 从用户查询中提取已知标签关键词。
+     * 匹配策略：查询文本包含标签值（如 "南山 学区房" 包含 "学区房"）。
+     */
+    private List<String> extractTagKeywords(String query) {
+        if (query == null || query.isBlank()) return List.of();
+        String q = query.trim();
+        return KNOWN_TAGS.stream().filter(q::contains).toList();
+    }
+
+    /** 检查文档的 tags 元数据是否包含任意一个关键词 */
+    private boolean matchesAnyTag(Document doc, List<String> keywords) {
+        String tags = stringMeta(doc, "tags");
+        if (tags == null || tags.isBlank()) return false;
+        return keywords.stream().anyMatch(tags::contains);
     }
 
     /** 面积区间重叠判断：用户 [min, max] 与文档 [area_min, area_max] 是否有交集 */
@@ -337,7 +469,7 @@ public class HouseSearchTool {
     private String fallbackPopularHouses(int limit) {
         try {
             List<Document> docs = jdbcTemplate.query(
-                    "SELECT content, metadata FROM " + tableName + " WHERE metadata->>'type' = 'house' LIMIT ?",
+                    "SELECT content, metadata FROM " + tableName + " WHERE type = 'house' LIMIT ?",
                     (rs, i) -> new Document(rs.getString("content"),
                             parseJsonMap(rs.getString("metadata"))),
                     limit);
@@ -418,7 +550,7 @@ public class HouseSearchTool {
      * "深圳" → "深圳市", "南宁" → "南宁市", "深圳市" → "深圳市"（不变）
      */
     private String normalizeCity(String name) {
-        if (name == null || name.isBlank()) return name;
+        if (name == null || name.isBlank()) return null;
         String trimmed = name.trim();
         if (trimmed.endsWith("市") || trimmed.endsWith("县")) return trimmed;
         return trimmed + "市";
@@ -429,7 +561,7 @@ public class HouseSearchTool {
      * "南山" → "南山区", "福田" → "福田区", "南山区" → "南山区"（不变）
      */
     private String normalizeDistrict(String name) {
-        if (name == null || name.isBlank()) return name;
+        if (name == null || name.isBlank()) return null;
         String trimmed = name.trim();
         if (trimmed.endsWith("区") || trimmed.endsWith("县") || trimmed.endsWith("市")) return trimmed;
         return trimmed + "区";

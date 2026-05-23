@@ -4,6 +4,7 @@ spring:
   autoconfigure:
     exclude:
       - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeChatAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration
   config:
     import:
       - "optional:classpath:my-env.yml"
@@ -76,3 +77,16 @@ remote:
       customer-history: ${GET_HISTORY:/api/ai/v1/customer/history}
       customer-appointments: ${GET_APPOINTMENTS:/api/ai/v1/customer/appointments}
       customer-profile: ${GET_PROFILE:/api/ai/v1/customer/profile}
+
+search:
+  pipeline:
+    min-results: 3
+    cache-ttl-minutes: 8
+    recall-pool-size: 150
+    result-limit: 5
+  reranker:
+    weight-tag: 0.25
+    weight-persona: 0.20
+    weight-semantic: 0.25
+    weight-price: 0.15
+    weight-location: 0.15
