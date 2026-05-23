@@ -5,13 +5,13 @@
  Source Server Type    : MySQL
  Source Server Version : 80407 (8.4.7)
  Source Host           : localhost:3306
- Source Schema         : resms
+ Source Schema         : db_reggie
 
  Target Server Type    : MySQL
  Target Server Version : 80407 (8.4.7)
  File Encoding         : 65001
 
- Date: 18/05/2026 23:32:46
+ Date: 23/05/2026 16:31:39
 */
 
 SET NAMES utf8mb4;
@@ -41,8 +41,16 @@ CREATE TABLE `sys_dept`  (
   UNIQUE INDEX `uk_dept_code`(`dept_code` ASC) USING BTREE,
   INDEX `idx_parent_id`(`parent_id` ASC) USING BTREE,
   INDEX `idx_leader_id`(`leader_id` ASC) USING BTREE,
-  CONSTRAINT `fk_dept_leader` FOREIGN KEY (`leader_id`) REFERENCES `sys_user` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
+  CONSTRAINT `sys_dept_ibfk_1` FOREIGN KEY (`leader_id`) REFERENCES `sys_user` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
 ) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '部门表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of sys_dept
+-- ----------------------------
+INSERT INTO `sys_dept` VALUES (1, 0, '总部', 'HQ', NULL, NULL, 0, 1, 0, '2026-05-07 05:58:46', '2026-05-09 03:26:53', '', 1, NULL);
+INSERT INTO `sys_dept` VALUES (2, 1, '销售部', 'SALES', NULL, NULL, 0, 1, 0, '2026-05-07 05:58:46', '2026-05-09 22:08:48', ',1', 2, NULL);
+INSERT INTO `sys_dept` VALUES (3, 1, '财务部', 'FINANCE', NULL, NULL, 0, 1, 0, '2026-05-07 05:58:46', '2026-05-07 05:58:46', '', 2, NULL);
+INSERT INTO `sys_dept` VALUES (4, 2, '销售一部', 'SALEA_01', NULL, '100000', 0, 1, 0, '2026-05-09 22:09:21', '2026-05-09 22:09:21', ',1,2', 2, '');
 
 -- ----------------------------
 -- Table structure for sys_menu
@@ -65,7 +73,135 @@ CREATE TABLE `sys_menu`  (
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_parent_id`(`parent_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 127 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统菜单表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 135 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统菜单表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of sys_menu
+-- ----------------------------
+INSERT INTO `sys_menu` VALUES (1, 0, '控制台', 'dashboard', 2, '/dashboard', 'dashboard/index', 'DataLine', 1, 1, 1, 0, '2026-05-08 07:46:07', '2026-05-08 08:12:34');
+INSERT INTO `sys_menu` VALUES (4, 0, '系统管理', 'system', 1, '/system', 'Layout', 'Setting', 10, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-08 06:26:17');
+INSERT INTO `sys_menu` VALUES (5, 4, '部门管理', 'system:dept', 2, 'dept', 'system/dept/index', 'OfficeBuilding', 1, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-08 06:26:17');
+INSERT INTO `sys_menu` VALUES (6, 5, '新增部门', 'system:dept:add', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (7, 5, '修改部门', 'system:dept:edit', 3, NULL, NULL, NULL, 2, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (8, 5, '删除部门', 'system:dept:delete', 3, NULL, NULL, NULL, 3, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (9, 5, '查询部门树', 'system:dept:query', 3, NULL, NULL, NULL, 4, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (10, 4, '菜单管理', 'system:menu', 2, 'menu', 'system/menu/index', 'Menu', 2, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-08 06:26:17');
+INSERT INTO `sys_menu` VALUES (11, 10, '获取导航菜单', 'system:menu:nav', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (12, 4, '角色管理', 'system:role', 2, 'role', 'system/role/index', 'Stamp', 3, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-08 06:26:17');
+INSERT INTO `sys_menu` VALUES (13, 12, '新增角色', 'system:role:add', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (14, 12, '修改角色', 'system:role:edit', 3, NULL, NULL, NULL, 2, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (15, 12, '删除角色', 'system:role:delete', 3, NULL, NULL, NULL, 3, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (16, 12, '修改角色状态', 'system:role:status', 3, NULL, NULL, NULL, 4, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (17, 12, '查询角色', 'system:role:query', 3, NULL, NULL, NULL, 5, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (18, 4, '用户管理', 'system:user', 2, 'user', 'system/user/index', 'User', 4, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-08 06:26:17');
+INSERT INTO `sys_menu` VALUES (19, 18, '新增用户', 'system:user:add', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (20, 18, '修改用户', 'system:user:edit', 3, NULL, NULL, NULL, 2, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (21, 18, '删除用户', 'system:user:delete', 3, NULL, NULL, NULL, 3, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (22, 18, '重置密码', 'system:user:password', 3, NULL, NULL, NULL, 4, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (23, 18, '修改用户状态', 'system:user:status', 3, NULL, NULL, NULL, 5, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (24, 18, '查询用户', 'system:user:query', 3, NULL, NULL, NULL, 6, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (25, 4, '操作日志', 'system:log', 2, 'log', 'system/log/index', 'Operation', 5, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-08 06:26:17');
+INSERT INTO `sys_menu` VALUES (26, 25, '分页查询日志', 'system:log:query', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (27, 0, '房源管理', 'house', 1, '/house', 'Layout', 'House', 20, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-08 06:26:17');
+INSERT INTO `sys_menu` VALUES (28, 27, '房源列表', 'house:house:list', 2, 'base', 'house/base/index', 'List', 1, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-10 01:43:02');
+INSERT INTO `sys_menu` VALUES (29, 28, '保存房源', 'house:house:save', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-10 01:43:02');
+INSERT INTO `sys_menu` VALUES (30, 28, '查询详情', 'house:house:query', 3, NULL, NULL, NULL, 2, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-10 01:43:02');
+INSERT INTO `sys_menu` VALUES (31, 28, '房源审核', 'house:house:audit', 3, NULL, NULL, NULL, 3, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-10 01:43:02');
+INSERT INTO `sys_menu` VALUES (32, 28, '房源导出', 'house:house:export', 3, NULL, NULL, NULL, 4, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-10 01:43:02');
+INSERT INTO `sys_menu` VALUES (33, 28, '设为封面', 'house:image:set-cover', 3, NULL, NULL, NULL, 5, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (34, 28, '保存图片', 'house:image:save', 3, NULL, NULL, NULL, 6, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (35, 28, '图片清理', 'house:image:clean', 3, NULL, NULL, NULL, 7, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (36, 28, '图片排序', 'house:image:sort', 3, NULL, NULL, NULL, 8, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (37, 27, '楼盘项目', 'house:project:list', 2, 'project', 'house/project/index', 'Place', 2, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-10 01:43:02');
+INSERT INTO `sys_menu` VALUES (38, 37, '保存项目', 'house:project:save', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (39, 37, '删除项目', 'house:project:delete', 3, NULL, NULL, NULL, 2, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (40, 37, '项目查询', 'house:project:query', 3, NULL, NULL, NULL, 3, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (41, 0, '业务管理', 'trade', 1, '/trade', 'Layout', 'ShoppingBag', 30, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-08 06:26:17');
+INSERT INTO `sys_menu` VALUES (42, 41, '交易订单', 'trade:order', 2, 'order', 'trade/order/index', 'Tickets', 1, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-08 06:26:17');
+INSERT INTO `sys_menu` VALUES (43, 42, '订单查询', 'trade:order:query', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (44, 42, '创建交易', 'trade:order:add', 3, NULL, NULL, NULL, 2, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (45, 42, '更新订单', 'trade:order:edit', 3, NULL, NULL, NULL, 3, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (46, 41, '客户管理', 'trade:customer', 2, 'customer', 'trade/customer/index', 'Avatar', 2, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-08 06:26:17');
+INSERT INTO `sys_menu` VALUES (47, 46, '查询客户', 'trade:customer:query', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (48, 46, '保存客户', 'trade:customer:save', 3, NULL, NULL, NULL, 2, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (49, 46, '删除客户', 'trade:customer:delete', 3, NULL, NULL, NULL, 3, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (50, 46, '查看手机号', 'trade:customer:view-phone', 3, NULL, NULL, NULL, 4, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (51, 0, '财务管理', 'finance', 1, '/finance', 'Layout', 'Money', 40, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-08 06:26:17');
+INSERT INTO `sys_menu` VALUES (52, 51, '支付流水', 'fin:payment', 2, 'payment', 'finance/payment/index', 'CreditCard', 1, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-08 06:26:17');
+INSERT INTO `sys_menu` VALUES (53, 52, '流水查询', 'fin:payment:query', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (54, 52, '提交流水', 'fin:payment:add', 3, NULL, NULL, NULL, 2, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (55, 52, '财务审核', 'fin:payment:audit', 3, NULL, NULL, NULL, 3, 1, 1, 0, '2026-05-07 12:09:39', '2026-05-07 12:09:39');
+INSERT INTO `sys_menu` VALUES (56, 70, '通知公告', 'message:notice', 2, 'notice', 'message/notice/index', 'Bell', 6, 1, 1, 0, '2026-05-08 07:46:07', '2026-05-09 21:07:34');
+INSERT INTO `sys_menu` VALUES (57, 56, '查询公告', 'message:notice:query', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-08 07:46:07', '2026-05-09 02:06:53');
+INSERT INTO `sys_menu` VALUES (58, 56, '发布公告', 'message:notice:add', 3, NULL, NULL, NULL, 2, 1, 1, 0, '2026-05-08 07:46:07', '2026-05-09 02:06:53');
+INSERT INTO `sys_menu` VALUES (59, 51, '佣金管理', 'fin:commission', 2, 'commission', 'finance/commission/index', 'Money', 2, 1, 1, 0, '2026-05-08 07:46:07', '2026-05-08 07:46:07');
+INSERT INTO `sys_menu` VALUES (60, 51, '经营报表', 'fin:report', 2, 'report', 'finance/report/index', 'DataAnalysis', 3, 1, 1, 0, '2026-05-08 07:46:07', '2026-05-08 07:46:07');
+INSERT INTO `sys_menu` VALUES (61, 41, '客户足迹', 'trade:history', 2, 'history', 'trade/history/index', 'List', 3, 1, 1, 0, '2026-05-08 07:46:07', '2026-05-08 23:59:55');
+INSERT INTO `sys_menu` VALUES (62, 41, '客户收藏', 'trade:favorite', 2, 'favorite', 'trade/favorite/index', 'Star', 4, 1, 1, 0, '2026-05-08 07:46:07', '2026-05-08 07:46:07');
+INSERT INTO `sys_menu` VALUES (70, 0, '消息中心', 'message', 1, '/message', 'Layout', 'ChatDotRound', 50, 1, 1, 0, '2026-05-08 07:46:07', '2026-05-08 07:46:07');
+INSERT INTO `sys_menu` VALUES (71, 70, '在线聊天', 'message:chat', 2, 'chat', 'message/chat/index', 'ChatLineRound', 1, 1, 1, 0, '2026-05-08 07:46:07', '2026-05-08 07:46:07');
+INSERT INTO `sys_menu` VALUES (72, 27, '房源日志', 'house:log', 2, 'log', 'house/log/index', 'List', 3, 1, 1, 0, '2026-05-08 23:55:00', '2026-05-08 23:59:01');
+INSERT INTO `sys_menu` VALUES (73, 0, '我的部门', 'team', 1, '/team', 'Layout', 'UserFilled', 45, 1, 1, 0, '2026-05-09 02:24:02', '2026-05-11 14:02:13');
+INSERT INTO `sys_menu` VALUES (74, 73, '部门成员', 'team:user', 2, 'user', 'team/user/index', 'User', 1, 1, 1, 0, '2026-05-09 02:24:02', '2026-05-09 03:18:22');
+INSERT INTO `sys_menu` VALUES (75, 73, '业绩统计', 'team:performance', 2, 'performance', 'team/performance/index', 'TrendCharts', 2, 1, 1, 0, '2026-05-09 02:24:02', '2026-05-09 02:24:02');
+INSERT INTO `sys_menu` VALUES (76, 5, '部门成员', 'system:dept:members', 3, NULL, NULL, NULL, 5, 1, 1, 0, '2026-05-09 19:44:42', '2026-05-09 19:44:42');
+INSERT INTO `sys_menu` VALUES (77, 5, '添加成员', 'system:dept:member:add', 3, NULL, NULL, NULL, 6, 1, 1, 0, '2026-05-09 19:44:42', '2026-05-09 19:44:42');
+INSERT INTO `sys_menu` VALUES (78, 5, '移除成员', 'system:dept:member:remove', 3, NULL, NULL, NULL, 7, 1, 1, 0, '2026-05-09 19:44:42', '2026-05-09 19:44:42');
+INSERT INTO `sys_menu` VALUES (79, 10, '菜单查询', 'system:menu:query', 3, NULL, NULL, NULL, 2, 1, 1, 0, '2026-05-09 20:54:05', '2026-05-09 20:54:05');
+INSERT INTO `sys_menu` VALUES (80, 10, '菜单新增', 'system:menu:add', 3, NULL, NULL, NULL, 3, 1, 1, 0, '2026-05-09 20:54:05', '2026-05-09 20:54:05');
+INSERT INTO `sys_menu` VALUES (81, 10, '菜单修改', 'system:menu:edit', 3, NULL, NULL, NULL, 4, 1, 1, 0, '2026-05-09 20:54:05', '2026-05-09 20:54:05');
+INSERT INTO `sys_menu` VALUES (82, 10, '菜单删除', 'system:menu:delete', 3, NULL, NULL, NULL, 5, 1, 1, 0, '2026-05-09 20:54:05', '2026-05-09 20:54:05');
+INSERT INTO `sys_menu` VALUES (83, 25, '操作导出', 'system:log:export', 3, NULL, NULL, NULL, 2, 1, 1, 0, '2026-05-09 20:57:08', '2026-05-09 20:57:08');
+INSERT INTO `sys_menu` VALUES (84, 25, '操作详情', 'system:log:detail', 3, NULL, NULL, NULL, 3, 1, 1, 0, '2026-05-09 20:57:08', '2026-05-09 20:57:08');
+INSERT INTO `sys_menu` VALUES (85, 18, '用户导出', 'system:user:export', 3, NULL, NULL, NULL, 7, 1, 1, 0, '2026-05-09 21:01:18', '2026-05-09 21:01:18');
+INSERT INTO `sys_menu` VALUES (86, 56, '修改公告', 'message:notice:edit', 3, NULL, NULL, NULL, 3, 1, 1, 0, '2026-05-09 21:07:34', '2026-05-09 21:07:34');
+INSERT INTO `sys_menu` VALUES (87, 56, '删除公告', 'message:notice:delete', 3, NULL, NULL, NULL, 4, 1, 1, 0, '2026-05-09 21:07:34', '2026-05-09 21:07:34');
+INSERT INTO `sys_menu` VALUES (88, 56, '撤回公告', 'message:notice:withdraw', 3, NULL, NULL, NULL, 5, 1, 1, 0, '2026-05-09 21:07:34', '2026-05-09 21:07:34');
+INSERT INTO `sys_menu` VALUES (89, 28, '删除房源', 'house:house:delete', 3, NULL, NULL, NULL, 9, 1, 1, 0, '2026-05-10 00:48:43', '2026-05-10 01:43:02');
+INSERT INTO `sys_menu` VALUES (90, 37, '导出项目', 'house:project:export', 3, NULL, NULL, NULL, 4, 1, 1, 0, '2026-05-10 00:49:20', '2026-05-10 00:49:20');
+INSERT INTO `sys_menu` VALUES (92, 37, '变动日志', 'house:project:log', 3, NULL, NULL, NULL, 5, 1, 1, 0, '2026-05-10 00:49:20', '2026-05-13 00:31:12');
+INSERT INTO `sys_menu` VALUES (93, 72, '查询日志', 'house:log:query', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-10 00:49:36', '2026-05-10 00:49:36');
+INSERT INTO `sys_menu` VALUES (94, 72, '导出日志', 'house:log:export', 3, NULL, NULL, NULL, 2, 1, 1, 0, '2026-05-10 00:49:36', '2026-05-10 00:49:36');
+INSERT INTO `sys_menu` VALUES (95, 41, '客户列表', 'trade:appuser', 2, 'appuser', 'trade/appuser/index', 'UserFilled', 10, 1, 1, 0, '2026-05-10 10:44:50', '2026-05-10 10:44:50');
+INSERT INTO `sys_menu` VALUES (96, 95, '查询客户', 'trade:appuser:query', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-10 10:44:50', '2026-05-10 10:44:50');
+INSERT INTO `sys_menu` VALUES (97, 95, '新增客户', 'trade:appuser:add', 3, NULL, NULL, NULL, 2, 1, 1, 0, '2026-05-10 10:44:50', '2026-05-10 10:44:50');
+INSERT INTO `sys_menu` VALUES (98, 95, '修改客户', 'trade:appuser:edit', 3, NULL, NULL, NULL, 3, 1, 1, 0, '2026-05-10 10:44:50', '2026-05-10 10:44:50');
+INSERT INTO `sys_menu` VALUES (99, 95, '删除客户', 'trade:appuser:delete', 3, NULL, NULL, NULL, 4, 1, 1, 0, '2026-05-10 10:44:50', '2026-05-10 10:44:50');
+INSERT INTO `sys_menu` VALUES (100, 95, '导出客户', 'trade:appuser:export', 3, NULL, NULL, NULL, 5, 1, 1, 0, '2026-05-10 10:44:50', '2026-05-10 10:44:50');
+INSERT INTO `sys_menu` VALUES (101, 95, '修改状态', 'trade:appuser:status', 3, NULL, NULL, NULL, 6, 1, 1, 0, '2026-05-10 10:44:50', '2026-05-10 10:44:50');
+INSERT INTO `sys_menu` VALUES (102, 42, '导出订单', 'trade:order:export', 3, NULL, NULL, NULL, 4, 1, 1, 0, '2026-05-10 20:11:08', '2026-05-10 20:11:08');
+INSERT INTO `sys_menu` VALUES (103, 42, '打印合同', 'trade:order:print', 3, NULL, NULL, NULL, 5, 1, 1, 0, '2026-05-10 20:11:08', '2026-05-10 20:11:08');
+INSERT INTO `sys_menu` VALUES (104, 42, '下载凭证', 'trade:order:download', 3, NULL, NULL, NULL, 6, 1, 1, 0, '2026-05-10 20:11:08', '2026-05-10 20:11:08');
+INSERT INTO `sys_menu` VALUES (105, 46, '公海池', 'trade:customer:public-pool', 3, NULL, NULL, NULL, 5, 1, 1, 0, '2026-05-10 20:12:53', '2026-05-10 20:12:53');
+INSERT INTO `sys_menu` VALUES (106, 46, '跟进记录', 'trade:customer:followup', 3, NULL, NULL, NULL, 6, 1, 1, 0, '2026-05-10 20:12:53', '2026-05-10 20:12:53');
+INSERT INTO `sys_menu` VALUES (107, 61, '足迹查询', 'trade:history:query', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-10 20:18:58', '2026-05-10 20:18:58');
+INSERT INTO `sys_menu` VALUES (108, 61, '录入轨迹', 'trade:history:add', 3, NULL, NULL, NULL, 2, 1, 1, 0, '2026-05-10 20:18:58', '2026-05-10 20:18:58');
+INSERT INTO `sys_menu` VALUES (109, 61, '导出报告', 'trade:history:export', 3, NULL, NULL, NULL, 3, 1, 1, 0, '2026-05-10 20:18:58', '2026-05-10 20:18:58');
+INSERT INTO `sys_menu` VALUES (110, 62, '查看画像', 'trade:favorite:query', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-10 20:58:07', '2026-05-10 20:58:07');
+INSERT INTO `sys_menu` VALUES (111, 28, '指派销售', 'house:house:assign', 3, NULL, NULL, NULL, 10, 1, 1, 0, '2026-05-11 16:19:56', '2026-05-11 16:19:56');
+INSERT INTO `sys_menu` VALUES (112, 42, '指派订单销售', 'trade:order:assign', 3, NULL, NULL, NULL, 20, 1, 1, 0, '2026-05-11 16:27:22', '2026-05-11 16:27:22');
+INSERT INTO `sys_menu` VALUES (113, 41, '过户管理', 'trade:transfer', 2, 'transfer', 'trade/transfer/index', 'Finished', 5, 1, 1, 0, '2026-05-12 10:00:00', '2026-05-12 10:00:00');
+INSERT INTO `sys_menu` VALUES (114, 113, '查询过户', 'trade:transfer:query', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-12 10:00:00', '2026-05-12 10:00:00');
+INSERT INTO `sys_menu` VALUES (115, 113, '创建过户', 'trade:transfer:add', 3, NULL, NULL, NULL, 2, 1, 1, 0, '2026-05-12 10:00:00', '2026-05-12 10:00:00');
+INSERT INTO `sys_menu` VALUES (116, 113, '确认过户', 'trade:transfer:complete', 3, NULL, NULL, NULL, 3, 1, 1, 0, '2026-05-12 10:00:00', '2026-05-12 10:00:00');
+INSERT INTO `sys_menu` VALUES (117, 113, '上传文件', 'trade:transfer:upload', 3, NULL, NULL, NULL, 4, 1, 1, 0, '2026-05-12 10:00:00', '2026-05-12 10:00:00');
+INSERT INTO `sys_menu` VALUES (118, 59, '佣金列表', 'finance:commission:list', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-12 23:44:16', '2026-05-12 23:44:16');
+INSERT INTO `sys_menu` VALUES (119, 59, '佣金查询', 'finance:commission:query', 3, NULL, NULL, NULL, 2, 1, 1, 0, '2026-05-12 23:44:16', '2026-05-12 23:44:16');
+INSERT INTO `sys_menu` VALUES (120, 59, '佣金核算', 'finance:commission:calculate', 3, NULL, NULL, NULL, 3, 1, 1, 0, '2026-05-12 23:44:16', '2026-05-12 23:44:16');
+INSERT INTO `sys_menu` VALUES (121, 59, '佣金发放', 'finance:commission:issue', 3, NULL, NULL, NULL, 4, 1, 1, 0, '2026-05-12 23:44:16', '2026-05-12 23:44:16');
+INSERT INTO `sys_menu` VALUES (122, 60, '楼盘报表', 'finance:report:project', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-13 00:10:43', '2026-05-13 00:10:43');
+INSERT INTO `sys_menu` VALUES (123, 60, '销售业绩报表', 'finance:report:sales', 3, NULL, NULL, NULL, 2, 1, 1, 0, '2026-05-13 00:11:32', '2026-05-13 00:11:32');
+INSERT INTO `sys_menu` VALUES (124, 60, '收支趋势报表', 'finance:report:trend', 3, NULL, NULL, NULL, 3, 1, 1, 0, '2026-05-13 00:12:15', '2026-05-13 00:12:15');
+INSERT INTO `sys_menu` VALUES (125, 46, '公海池领取', 'trade:customer:claim', 3, NULL, NULL, NULL, 6, 1, 1, 0, '2026-05-14 20:33:34', '2026-05-14 20:33:34');
+INSERT INTO `sys_menu` VALUES (126, 46, '预约带看', 'trade:customer:appointment', 3, NULL, NULL, NULL, 7, 1, 1, 0, '2026-05-14 20:34:00', '2026-05-14 20:34:00');
+INSERT INTO `sys_menu` VALUES (127, 74, '新增成员', 'team:user:add', 3, NULL, NULL, NULL, 1, 1, 1, 0, '2026-05-19 00:22:29', '2026-05-19 00:22:29');
+INSERT INTO `sys_menu` VALUES (128, 74, '导出名册', 'team:user:export', 3, NULL, NULL, NULL, 2, 1, 1, 0, '2026-05-19 00:22:29', '2026-05-19 00:22:29');
+INSERT INTO `sys_menu` VALUES (129, 74, '编辑月度目标', 'team:performance:edit', 3, NULL, NULL, NULL, 3, 1, 1, 0, '2026-05-19 00:22:29', '2026-05-19 00:22:29');
+INSERT INTO `sys_menu` VALUES (130, 74, '调整部门', 'team:user:dept', 3, NULL, NULL, NULL, 4, 1, 1, 0, '2026-05-19 00:22:29', '2026-05-19 00:22:29');
+INSERT INTO `sys_menu` VALUES (131, 74, '设为负责人', 'team:user:promote', 3, NULL, NULL, NULL, 5, 1, 1, 0, '2026-05-19 00:22:29', '2026-05-19 00:22:29');
+INSERT INTO `sys_menu` VALUES (132, 74, '工作交接', 'team:user:handover', 3, NULL, NULL, NULL, 6, 1, 1, 0, '2026-05-19 00:22:29', '2026-05-19 00:22:29');
+INSERT INTO `sys_menu` VALUES (133, 74, '移除部门', 'team:user:remove', 3, NULL, NULL, NULL, 7, 1, 1, 0, '2026-05-19 00:22:29', '2026-05-19 00:22:29');
+INSERT INTO `sys_menu` VALUES (134, 74, '快捷修改状态', 'team:user:status', 3, NULL, NULL, NULL, 8, 1, 1, 0, '2026-05-19 00:22:29', '2026-05-19 00:22:29');
 
 -- ----------------------------
 -- Table structure for sys_notification
@@ -101,8 +237,12 @@ CREATE TABLE `sys_notification`  (
   INDEX `idx_notice_type`(`notice_type` ASC) USING BTREE,
   INDEX `idx_send_time`(`send_time` ASC) USING BTREE,
   INDEX `idx_business`(`business_type` ASC, `business_id` ASC) USING BTREE,
-  CONSTRAINT `fk_notification_sender` FOREIGN KEY (`sender_id`) REFERENCES `sys_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 86 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '工作通知表' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `sys_notification_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `sys_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '工作通知表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of sys_notification
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for sys_operation_log
@@ -133,7 +273,11 @@ CREATE TABLE `sys_operation_log`  (
   INDEX `idx_module`(`module` ASC) USING BTREE,
   INDEX `idx_operation_time`(`operation_time` ASC) USING BTREE,
   INDEX `idx_business_type`(`business_type` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 961 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '操作日志表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '操作日志表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of sys_operation_log
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for sys_role
@@ -153,15 +297,19 @@ CREATE TABLE `sys_role`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_role_code`(`role_code` ASC) USING BTREE,
   INDEX `idx_create_user_id`(`create_user_id` ASC) USING BTREE,
-  CONSTRAINT `fk_role_creator` FOREIGN KEY (`create_user_id`) REFERENCES `sys_user` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
+  CONSTRAINT `sys_role_ibfk_1` FOREIGN KEY (`create_user_id`) REFERENCES `sys_user` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
 ) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '角色表' ROW_FORMAT = DYNAMIC;
 
-INSERT INTO `sys_role` VALUES (1, '管理员', 'admin', NULL, 1, 1, 0, NULL, NOW(), NOW());
-INSERT INTO `sys_role` VALUES (2, '销售专员', 'sales', NULL, 4, 1, 0, NULL,NOW(), NOW());
-INSERT INTO `sys_role` VALUES (3, '财务专员', 'finance', NULL, 2, 1, 0, NULL,NOW(), NOW());
-INSERT INTO `sys_role` VALUES (4, '销售经理', 'sales_manager', NULL, 3, 1, 0, NULL, NOW(), NOW());
-INSERT INTO `sys_role` VALUES (5, '财务经理', 'finance_manager', NULL, 2, 1, 0, NULL, NOW(), NOW());
-INSERT INTO `sys_role` VALUES (6, 'user', 'user', '仅拥有基础权限', 4, 1, 0, NULL, NOW(), NOW());
+-- ----------------------------
+-- Records of sys_role
+-- ----------------------------
+INSERT INTO `sys_role` VALUES (1, '管理员', 'admin', NULL, 1, 1, 0, NULL, '2026-05-07 05:58:46', '2026-05-09 22:27:49');
+INSERT INTO `sys_role` VALUES (2, '销售专员', 'sales', NULL, 4, 1, 0, NULL, '2026-05-07 05:58:46', '2026-05-09 23:15:39');
+INSERT INTO `sys_role` VALUES (3, '财务专员', 'finance', NULL, 1, 1, 0, NULL, '2026-05-07 05:58:46', '2026-05-19 17:45:30');
+INSERT INTO `sys_role` VALUES (4, '销售经理', 'sales_manager', NULL, 3, 1, 0, NULL, '2026-05-09 03:24:12', '2026-05-09 23:11:29');
+INSERT INTO `sys_role` VALUES (5, '财务经理', 'finance_manager', NULL, 1, 1, 0, NULL, '2026-05-09 03:24:12', '2026-05-19 17:45:34');
+INSERT INTO `sys_role` VALUES (6, 'user', 'user', '仅拥有基础权限', 4, 1, 0, NULL, '2026-05-09 22:32:07', '2026-05-09 22:32:35');
+INSERT INTO `sys_role` VALUES (7, 'systemBot', 'rbot', '仅用于发送通知', 4, 1, 0, NULL, '2026-05-12 12:43:27', '2026-05-12 12:43:27');
 
 -- ----------------------------
 -- Table structure for sys_role_menu
@@ -174,9 +322,137 @@ CREATE TABLE `sys_role_menu`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_role_menu`(`role_id` ASC, `menu_id` ASC) USING BTREE,
   INDEX `idx_menu_id`(`menu_id` ASC) USING BTREE,
-  CONSTRAINT `fk_role_menu_menu` FOREIGN KEY (`menu_id`) REFERENCES `sys_menu` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT `fk_role_menu_role` FOREIGN KEY (`role_id`) REFERENCES `sys_role` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1454 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '角色菜单关联表' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `sys_role_menu_ibfk_1` FOREIGN KEY (`menu_id`) REFERENCES `sys_menu` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `sys_role_menu_ibfk_2` FOREIGN KEY (`role_id`) REFERENCES `sys_role` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 125 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '角色菜单关联表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of sys_role_menu
+-- ----------------------------
+INSERT INTO `sys_role_menu` VALUES (1, 1, 1);
+INSERT INTO `sys_role_menu` VALUES (2, 1, 4);
+INSERT INTO `sys_role_menu` VALUES (3, 1, 5);
+INSERT INTO `sys_role_menu` VALUES (4, 1, 6);
+INSERT INTO `sys_role_menu` VALUES (5, 1, 7);
+INSERT INTO `sys_role_menu` VALUES (6, 1, 8);
+INSERT INTO `sys_role_menu` VALUES (7, 1, 9);
+INSERT INTO `sys_role_menu` VALUES (8, 1, 10);
+INSERT INTO `sys_role_menu` VALUES (9, 1, 11);
+INSERT INTO `sys_role_menu` VALUES (10, 1, 12);
+INSERT INTO `sys_role_menu` VALUES (11, 1, 13);
+INSERT INTO `sys_role_menu` VALUES (12, 1, 14);
+INSERT INTO `sys_role_menu` VALUES (13, 1, 15);
+INSERT INTO `sys_role_menu` VALUES (14, 1, 16);
+INSERT INTO `sys_role_menu` VALUES (15, 1, 17);
+INSERT INTO `sys_role_menu` VALUES (16, 1, 18);
+INSERT INTO `sys_role_menu` VALUES (17, 1, 19);
+INSERT INTO `sys_role_menu` VALUES (18, 1, 20);
+INSERT INTO `sys_role_menu` VALUES (19, 1, 21);
+INSERT INTO `sys_role_menu` VALUES (20, 1, 22);
+INSERT INTO `sys_role_menu` VALUES (21, 1, 23);
+INSERT INTO `sys_role_menu` VALUES (22, 1, 24);
+INSERT INTO `sys_role_menu` VALUES (23, 1, 25);
+INSERT INTO `sys_role_menu` VALUES (24, 1, 26);
+INSERT INTO `sys_role_menu` VALUES (25, 1, 27);
+INSERT INTO `sys_role_menu` VALUES (26, 1, 28);
+INSERT INTO `sys_role_menu` VALUES (27, 1, 29);
+INSERT INTO `sys_role_menu` VALUES (28, 1, 30);
+INSERT INTO `sys_role_menu` VALUES (29, 1, 31);
+INSERT INTO `sys_role_menu` VALUES (30, 1, 32);
+INSERT INTO `sys_role_menu` VALUES (31, 1, 33);
+INSERT INTO `sys_role_menu` VALUES (32, 1, 34);
+INSERT INTO `sys_role_menu` VALUES (33, 1, 35);
+INSERT INTO `sys_role_menu` VALUES (34, 1, 36);
+INSERT INTO `sys_role_menu` VALUES (35, 1, 37);
+INSERT INTO `sys_role_menu` VALUES (36, 1, 38);
+INSERT INTO `sys_role_menu` VALUES (37, 1, 39);
+INSERT INTO `sys_role_menu` VALUES (38, 1, 40);
+INSERT INTO `sys_role_menu` VALUES (39, 1, 41);
+INSERT INTO `sys_role_menu` VALUES (40, 1, 42);
+INSERT INTO `sys_role_menu` VALUES (41, 1, 43);
+INSERT INTO `sys_role_menu` VALUES (42, 1, 44);
+INSERT INTO `sys_role_menu` VALUES (43, 1, 45);
+INSERT INTO `sys_role_menu` VALUES (44, 1, 46);
+INSERT INTO `sys_role_menu` VALUES (45, 1, 47);
+INSERT INTO `sys_role_menu` VALUES (46, 1, 48);
+INSERT INTO `sys_role_menu` VALUES (47, 1, 49);
+INSERT INTO `sys_role_menu` VALUES (48, 1, 50);
+INSERT INTO `sys_role_menu` VALUES (49, 1, 51);
+INSERT INTO `sys_role_menu` VALUES (50, 1, 52);
+INSERT INTO `sys_role_menu` VALUES (51, 1, 53);
+INSERT INTO `sys_role_menu` VALUES (52, 1, 54);
+INSERT INTO `sys_role_menu` VALUES (53, 1, 55);
+INSERT INTO `sys_role_menu` VALUES (54, 1, 56);
+INSERT INTO `sys_role_menu` VALUES (55, 1, 57);
+INSERT INTO `sys_role_menu` VALUES (56, 1, 58);
+INSERT INTO `sys_role_menu` VALUES (57, 1, 59);
+INSERT INTO `sys_role_menu` VALUES (58, 1, 60);
+INSERT INTO `sys_role_menu` VALUES (59, 1, 61);
+INSERT INTO `sys_role_menu` VALUES (60, 1, 62);
+INSERT INTO `sys_role_menu` VALUES (61, 1, 70);
+INSERT INTO `sys_role_menu` VALUES (62, 1, 71);
+INSERT INTO `sys_role_menu` VALUES (63, 1, 72);
+INSERT INTO `sys_role_menu` VALUES (64, 1, 73);
+INSERT INTO `sys_role_menu` VALUES (65, 1, 74);
+INSERT INTO `sys_role_menu` VALUES (66, 1, 75);
+INSERT INTO `sys_role_menu` VALUES (67, 1, 76);
+INSERT INTO `sys_role_menu` VALUES (68, 1, 77);
+INSERT INTO `sys_role_menu` VALUES (69, 1, 78);
+INSERT INTO `sys_role_menu` VALUES (70, 1, 79);
+INSERT INTO `sys_role_menu` VALUES (71, 1, 80);
+INSERT INTO `sys_role_menu` VALUES (72, 1, 81);
+INSERT INTO `sys_role_menu` VALUES (73, 1, 82);
+INSERT INTO `sys_role_menu` VALUES (74, 1, 83);
+INSERT INTO `sys_role_menu` VALUES (75, 1, 84);
+INSERT INTO `sys_role_menu` VALUES (76, 1, 85);
+INSERT INTO `sys_role_menu` VALUES (77, 1, 86);
+INSERT INTO `sys_role_menu` VALUES (78, 1, 87);
+INSERT INTO `sys_role_menu` VALUES (79, 1, 88);
+INSERT INTO `sys_role_menu` VALUES (80, 1, 89);
+INSERT INTO `sys_role_menu` VALUES (81, 1, 90);
+INSERT INTO `sys_role_menu` VALUES (82, 1, 92);
+INSERT INTO `sys_role_menu` VALUES (83, 1, 93);
+INSERT INTO `sys_role_menu` VALUES (84, 1, 94);
+INSERT INTO `sys_role_menu` VALUES (85, 1, 95);
+INSERT INTO `sys_role_menu` VALUES (86, 1, 96);
+INSERT INTO `sys_role_menu` VALUES (87, 1, 97);
+INSERT INTO `sys_role_menu` VALUES (88, 1, 98);
+INSERT INTO `sys_role_menu` VALUES (89, 1, 99);
+INSERT INTO `sys_role_menu` VALUES (90, 1, 100);
+INSERT INTO `sys_role_menu` VALUES (91, 1, 101);
+INSERT INTO `sys_role_menu` VALUES (92, 1, 102);
+INSERT INTO `sys_role_menu` VALUES (93, 1, 103);
+INSERT INTO `sys_role_menu` VALUES (94, 1, 104);
+INSERT INTO `sys_role_menu` VALUES (95, 1, 105);
+INSERT INTO `sys_role_menu` VALUES (96, 1, 106);
+INSERT INTO `sys_role_menu` VALUES (97, 1, 107);
+INSERT INTO `sys_role_menu` VALUES (98, 1, 108);
+INSERT INTO `sys_role_menu` VALUES (99, 1, 109);
+INSERT INTO `sys_role_menu` VALUES (100, 1, 110);
+INSERT INTO `sys_role_menu` VALUES (101, 1, 111);
+INSERT INTO `sys_role_menu` VALUES (102, 1, 112);
+INSERT INTO `sys_role_menu` VALUES (103, 1, 113);
+INSERT INTO `sys_role_menu` VALUES (104, 1, 114);
+INSERT INTO `sys_role_menu` VALUES (105, 1, 115);
+INSERT INTO `sys_role_menu` VALUES (106, 1, 116);
+INSERT INTO `sys_role_menu` VALUES (107, 1, 117);
+INSERT INTO `sys_role_menu` VALUES (108, 1, 118);
+INSERT INTO `sys_role_menu` VALUES (109, 1, 119);
+INSERT INTO `sys_role_menu` VALUES (110, 1, 120);
+INSERT INTO `sys_role_menu` VALUES (111, 1, 121);
+INSERT INTO `sys_role_menu` VALUES (112, 1, 122);
+INSERT INTO `sys_role_menu` VALUES (113, 1, 123);
+INSERT INTO `sys_role_menu` VALUES (114, 1, 124);
+INSERT INTO `sys_role_menu` VALUES (115, 1, 125);
+INSERT INTO `sys_role_menu` VALUES (116, 1, 126);
+INSERT INTO `sys_role_menu` VALUES (117, 1, 127);
+INSERT INTO `sys_role_menu` VALUES (118, 1, 128);
+INSERT INTO `sys_role_menu` VALUES (119, 1, 129);
+INSERT INTO `sys_role_menu` VALUES (120, 1, 130);
+INSERT INTO `sys_role_menu` VALUES (121, 1, 131);
+INSERT INTO `sys_role_menu` VALUES (122, 1, 132);
+INSERT INTO `sys_role_menu` VALUES (123, 1, 133);
+INSERT INTO `sys_role_menu` VALUES (124, 1, 134);
 
 -- ----------------------------
 -- Table structure for sys_user
@@ -206,8 +482,17 @@ CREATE TABLE `sys_user`  (
   INDEX `idx_dept_id`(`dept_id` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统用户表' ROW_FORMAT = DYNAMIC;
 
-
-INSERT INTO `sys_user` VALUES (1, 'admin', '$2a$10$Fl89nMYNBWkkKAIyPP6zQOOv/B4XuNO4oWf8uVsuhvU1FL/xVJHfK', '超级管理员', 'Auth', '13800000001', '', 0, 'avatar/2026/05/13/a7de55401a164a879529d35c912f38de.jpg', 1, 1, 0, NULL, NULL, NULL, NOW(), NOW());
+-- ----------------------------
+-- Records of sys_user
+-- ----------------------------
+INSERT INTO `sys_user` VALUES (1, 'admin', '$2a$10$Fl89nMYNBWkkKAIyPP6zQOOv/B4XuNO4oWf8uVsuhvU1FL/xVJHfK', '超级管理员', 'Auth', '13800000001', '', 0, 'avatar/2026/05/13/a7de55401a164a879529d35c912f38de.jpg', 1, 1, 0, NULL, NULL, NULL, '2026-05-07 05:58:46', '2026-05-13 19:00:10');
+INSERT INTO `sys_user` VALUES (2, 'sales01', '$2a$10$Fl89nMYNBWkkKAIyPP6zQOOv/B4XuNO4oWf8uVsuhvU1FL/xVJHfK', '张销售', 'Ax', '13800000002', NULL, 0, NULL, 2, 1, 0, NULL, NULL, NULL, '2026-05-07 05:58:46', '2026-05-13 18:30:05');
+INSERT INTO `sys_user` VALUES (3, 'fin01', '$2a$10$Fl89nMYNBWkkKAIyPP6zQOOv/B4XuNO4oWf8uVsuhvU1FL/xVJHfK', '李财务', 'nidayin', '13800000003', '', 0, '/api/profile/avatar/2026/05/19/3e904216ec1440739e5e0a868cf76b3c.jpg', 3, 1, 0, NULL, NULL, NULL, '2026-05-07 05:58:46', '2026-05-19 17:48:39');
+INSERT INTO `sys_user` VALUES (4, 'zhangsan', '$2a$10$byFRJie00R0cAO65IbfY6.U3RtnWEVgsUFXl/jb7HyjKjra/dQQnW', '张三', 'ax', '18178329427', 'zhangsan@163.com', 1, '/api/profile/avatar/2026/05/13/9fd7a409b5024eb9b35f9298f1415cc7.jpg', 1, 1, 0, NULL, NULL, '', '2026-05-09 21:56:19', '2026-05-23 16:26:25');
+INSERT INTO `sys_user` VALUES (5, 'lihua', '$2a$10$.XyW2vr1ZYis4MRKFW8unupKKaYjysp4iDtOGlw82eIzY6oiAvVIe', '李华', 'AX', '18923130123', '123@11.com', 0, NULL, 4, 1, 0, NULL, NULL, '', '2026-05-09 22:11:35', '2026-05-13 18:30:09');
+INSERT INTO `sys_user` VALUES (6, 'tee', '$2a$10$FmpF9Rpr9mcxUItelw0.HefcbPUSbREp.utUMpdgj3SYJ.9WBOa0W', '刘世杰', 'liuXX', '18023566345', '1212@qq.com', 1, '/api/profile/avatar/2026/05/19/400e32a388094175958f1d751f9107e0.jpg', 4, 1, 0, NULL, NULL, '', '2026-05-09 22:21:06', '2026-05-19 18:36:07');
+INSERT INTO `sys_user` VALUES (7, 'linyi', '$2a$10$t7acC4lGowPHfB9TILqmV.I1HIjiUj041GtpmkQUBZMNpki0jU.wG', '林一', 'llyi', '18712344567', '', 0, '/api/profile/avatar/2026/05/13/30740c4679054a2abd44a65ccfb5d0aa.jpg', 2, 1, 0, NULL, NULL, '', '2026-05-09 23:17:09', '2026-05-13 18:46:25');
+INSERT INTO `sys_user` VALUES (8, 'rbot', '$2a$10$h3wQ.q/4EjNCYlbH/AV0PO/w2tmV1ctXZY6E7W8T.UvPimishSuSC', 'x', 'bot', '18990123123', 'boot@qq.com', 0, NULL, 1, 1, 0, NULL, NULL, '0', '2026-05-12 12:44:21', '2026-05-15 20:57:34');
 
 -- ----------------------------
 -- Table structure for sys_user_notification
@@ -224,9 +509,13 @@ CREATE TABLE `sys_user_notification`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_notification_user`(`notification_id` ASC, `user_id` ASC) USING BTREE,
   INDEX `idx_user_read`(`user_id` ASC, `is_read` ASC) USING BTREE,
-  CONSTRAINT `fk_un_notification` FOREIGN KEY (`notification_id`) REFERENCES `sys_notification` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT `fk_un_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 52 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户通知关联表' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `sys_user_notification_ibfk_1` FOREIGN KEY (`notification_id`) REFERENCES `sys_notification` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `sys_user_notification_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户通知关联表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of sys_user_notification
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for sys_user_role
@@ -240,11 +529,26 @@ CREATE TABLE `sys_user_role`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_user_role`(`user_id` ASC, `role_id` ASC) USING BTREE,
   INDEX `idx_role_id`(`role_id` ASC) USING BTREE,
-  CONSTRAINT `fk_ur_role` FOREIGN KEY (`role_id`) REFERENCES `sys_role` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT `fk_ur_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 32 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户角色关联表' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `sys_user_role_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `sys_role` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `sys_user_role_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 14 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户角色关联表' ROW_FORMAT = DYNAMIC;
 
-INSERT INTO `sys_user_role` VALUES (1, 1, 1, NOW());
+-- ----------------------------
+-- Records of sys_user_role
+-- ----------------------------
+INSERT INTO `sys_user_role` VALUES (1, 2, 2, '2026-05-07 12:13:00');
+INSERT INTO `sys_user_role` VALUES (2, 1, 1, '2026-05-09 21:55:01');
+INSERT INTO `sys_user_role` VALUES (3, 4, 1, '2026-05-09 21:56:19');
+INSERT INTO `sys_user_role` VALUES (4, 6, 2, '2026-05-09 23:06:54');
+INSERT INTO `sys_user_role` VALUES (5, 6, 6, '2026-05-09 23:06:54');
+INSERT INTO `sys_user_role` VALUES (6, 5, 2, '2026-05-09 23:07:00');
+INSERT INTO `sys_user_role` VALUES (7, 5, 6, '2026-05-09 23:07:00');
+INSERT INTO `sys_user_role` VALUES (8, 3, 3, '2026-05-09 23:07:08');
+INSERT INTO `sys_user_role` VALUES (9, 3, 6, '2026-05-09 23:07:08');
+INSERT INTO `sys_user_role` VALUES (10, 7, 6, '2026-05-09 23:17:48');
+INSERT INTO `sys_user_role` VALUES (11, 7, 4, '2026-05-09 23:17:48');
+INSERT INTO `sys_user_role` VALUES (12, 8, 7, '2026-05-15 20:57:34');
+INSERT INTO `sys_user_role` VALUES (13, 8, 6, '2026-05-15 20:57:34');
 
 -- ----------------------------
 -- Table structure for tb_app_user
@@ -267,7 +571,11 @@ CREATE TABLE `tb_app_user`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_phone`(`phone` ASC) USING BTREE,
   UNIQUE INDEX `uk_wechat_openid`(`wechat_openid` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'C端移动端用户账号表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'C端移动端用户账号表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of tb_app_user
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_chat_message
@@ -291,8 +599,12 @@ CREATE TABLE `tb_chat_message`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_session_time`(`session_id` ASC, `create_time` ASC) USING BTREE,
   INDEX `idx_sender`(`sender_type` ASC, `sender_id` ASC) USING BTREE,
-  CONSTRAINT `fk_message_session` FOREIGN KEY (`session_id`) REFERENCES `tb_chat_session` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 54 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '聊天消息表（多态发送者）' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `tb_chat_message_ibfk_1` FOREIGN KEY (`session_id`) REFERENCES `tb_chat_session` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '聊天消息表（多态发送者）' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_chat_message
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_chat_session
@@ -309,7 +621,11 @@ CREATE TABLE `tb_chat_session`  (
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_last_message_time`(`last_message_time` DESC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 47 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '聊天会话主表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '聊天会话主表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_chat_session
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_chat_session_member
@@ -331,8 +647,12 @@ CREATE TABLE `tb_chat_session_member`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_session_usertype_user`(`session_id` ASC, `user_type` ASC, `user_id` ASC) USING BTREE,
   INDEX `idx_user_query`(`user_type` ASC, `user_id` ASC) USING BTREE,
-  CONSTRAINT `fk_member_session` FOREIGN KEY (`session_id`) REFERENCES `tb_chat_session` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 77 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '会话成员关联表（多态用户）' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `tb_chat_session_member_ibfk_1` FOREIGN KEY (`session_id`) REFERENCES `tb_chat_session` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '会话成员关联表（多态用户）' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_chat_session_member
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_commission
@@ -357,10 +677,14 @@ CREATE TABLE `tb_commission`  (
   UNIQUE INDEX `uk_transaction_sales`(`transaction_id` ASC, `sales_id` ASC) USING BTREE,
   INDEX `idx_sales_id`(`sales_id` ASC) USING BTREE,
   INDEX `idx_finance_id`(`finance_id` ASC) USING BTREE,
-  CONSTRAINT `fk_commission_finance` FOREIGN KEY (`finance_id`) REFERENCES `sys_user` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT,
-  CONSTRAINT `fk_commission_sales` FOREIGN KEY (`sales_id`) REFERENCES `sys_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `fk_commission_trans` FOREIGN KEY (`transaction_id`) REFERENCES `tb_transaction` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '销售佣金表' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `tb_commission_ibfk_1` FOREIGN KEY (`finance_id`) REFERENCES `sys_user` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT,
+  CONSTRAINT `tb_commission_ibfk_2` FOREIGN KEY (`sales_id`) REFERENCES `sys_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `tb_commission_ibfk_3` FOREIGN KEY (`transaction_id`) REFERENCES `tb_transaction` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '销售佣金表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_commission
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_customer
@@ -389,8 +713,12 @@ CREATE TABLE `tb_customer`  (
   UNIQUE INDEX `uk_app_user_id`(`app_user_id` ASC) USING BTREE,
   INDEX `idx_sales_id`(`sales_id` ASC) USING BTREE,
   INDEX `idx_intention_level`(`intention_level` ASC) USING BTREE,
-  CONSTRAINT `fk_customer_sales` FOREIGN KEY (`sales_id`) REFERENCES `sys_user` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '客户信息表' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `tb_customer_ibfk_1` FOREIGN KEY (`sales_id`) REFERENCES `sys_user` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '客户信息表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_customer
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_department_target
@@ -398,14 +726,18 @@ CREATE TABLE `tb_customer`  (
 DROP TABLE IF EXISTS `tb_department_target`;
 CREATE TABLE `tb_department_target`  (
   `id` int NOT NULL AUTO_INCREMENT COMMENT 'ID',
-  `dept_id` int NOT NULL COMMENT '閮ㄩ棬ID',
-  `target_month` varchar(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '鐩?爣鏈堜唤, YYYY-MM',
-  `target_amount` decimal(14, 2) NOT NULL COMMENT '鐩?爣涓氱哗閲戦?锛堜竾鍏冿級',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '鍒涘缓鏃堕棿',
-  `update_time` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '鏇存柊鏃堕棿',
+  `dept_id` int NOT NULL COMMENT '部门ID',
+  `target_month` varchar(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '月度, YYYY-MM',
+  `target_amount` decimal(14, 2) NOT NULL COMMENT '部门月度目标',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_dept_month`(`dept_id` ASC, `target_month` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '閮ㄩ棬鏈堝害鐩?爣琛' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '閮ㄩ棬鏈堝害鐩?爣琛' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of tb_department_target
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_house
@@ -451,7 +783,11 @@ CREATE TABLE `tb_house`  (
   INDEX `idx_status_area`(`status` ASC, `area` ASC) USING BTREE,
   INDEX `idx_project_status`(`project_id` ASC, `status` ASC) USING BTREE,
   INDEX `idx_sales_status`(`sales_id` ASC, `status` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 49 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '房源主表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '房源主表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_house
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_house_image
@@ -483,10 +819,14 @@ CREATE TABLE `tb_house_image`  (
   INDEX `idx_audit_status`(`audit_status` ASC) USING BTREE,
   INDEX `idx_upload_user_id`(`upload_user_id` ASC) USING BTREE,
   INDEX `idx_audit_user_id`(`audit_user_id` ASC) USING BTREE,
-  CONSTRAINT `fk_image_audit_user` FOREIGN KEY (`audit_user_id`) REFERENCES `sys_user` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT,
-  CONSTRAINT `fk_image_house` FOREIGN KEY (`house_id`) REFERENCES `tb_house` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT `fk_image_upload_user` FOREIGN KEY (`upload_user_id`) REFERENCES `sys_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 129 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '房源图片表' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `tb_house_image_ibfk_1` FOREIGN KEY (`audit_user_id`) REFERENCES `sys_user` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT,
+  CONSTRAINT `tb_house_image_ibfk_2` FOREIGN KEY (`house_id`) REFERENCES `tb_house` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `tb_house_image_ibfk_3` FOREIGN KEY (`upload_user_id`) REFERENCES `sys_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '房源图片表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_house_image
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_house_status_log
@@ -506,9 +846,13 @@ CREATE TABLE `tb_house_status_log`  (
   INDEX `idx_house_id`(`house_id` ASC) USING BTREE,
   INDEX `idx_operator_id`(`operator_id` ASC) USING BTREE,
   INDEX `idx_create_time`(`create_time` ASC) USING BTREE,
-  CONSTRAINT `fk_status_log_house` FOREIGN KEY (`house_id`) REFERENCES `tb_house` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT `fk_status_log_operator` FOREIGN KEY (`operator_id`) REFERENCES `sys_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 36 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '房源状态流转日志表' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `tb_house_status_log_ibfk_1` FOREIGN KEY (`house_id`) REFERENCES `tb_house` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `tb_house_status_log_ibfk_2` FOREIGN KEY (`operator_id`) REFERENCES `sys_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '房源状态流转日志表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_house_status_log
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_loan_record
@@ -530,8 +874,12 @@ CREATE TABLE `tb_loan_record`  (
   `update_time` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_transaction_id`(`transaction_id` ASC) USING BTREE,
-  CONSTRAINT `fk_loan_transaction` FOREIGN KEY (`transaction_id`) REFERENCES `tb_transaction` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT `tb_loan_record_ibfk_1` FOREIGN KEY (`transaction_id`) REFERENCES `tb_transaction` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '贷款记录表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of tb_loan_record
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_new_house_extend
@@ -552,8 +900,12 @@ CREATE TABLE `tb_new_house_extend`  (
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_house_id`(`house_id` ASC) USING BTREE,
-  CONSTRAINT `fk_new_house_extend` FOREIGN KEY (`house_id`) REFERENCES `tb_house` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 22 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '新房扩展信息表' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `tb_new_house_extend_ibfk_1` FOREIGN KEY (`house_id`) REFERENCES `tb_house` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '新房扩展信息表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_new_house_extend
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_payment
@@ -585,10 +937,14 @@ CREATE TABLE `tb_payment`  (
   INDEX `idx_transaction_id`(`transaction_id` ASC) USING BTREE,
   INDEX `idx_finance_id`(`finance_id` ASC) USING BTREE,
   INDEX `fk_payment_plan`(`payment_plan_id` ASC) USING BTREE,
-  CONSTRAINT `fk_payment_finance` FOREIGN KEY (`finance_id`) REFERENCES `sys_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `fk_payment_plan` FOREIGN KEY (`payment_plan_id`) REFERENCES `tb_payment_plan` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT,
-  CONSTRAINT `fk_payment_trans` FOREIGN KEY (`transaction_id`) REFERENCES `tb_transaction` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 58 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '收退款记录表' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `tb_payment_ibfk_1` FOREIGN KEY (`finance_id`) REFERENCES `sys_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `tb_payment_ibfk_2` FOREIGN KEY (`payment_plan_id`) REFERENCES `tb_payment_plan` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT,
+  CONSTRAINT `tb_payment_ibfk_3` FOREIGN KEY (`transaction_id`) REFERENCES `tb_transaction` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '收退款记录表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_payment
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_payment_plan
@@ -607,8 +963,12 @@ CREATE TABLE `tb_payment_plan`  (
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_transaction_id`(`transaction_id` ASC) USING BTREE,
-  CONSTRAINT `fk_plan_transaction` FOREIGN KEY (`transaction_id`) REFERENCES `tb_transaction` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 55 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '交易付款应收账单计划表' ROW_FORMAT = Dynamic;
+  CONSTRAINT `tb_payment_plan_ibfk_1` FOREIGN KEY (`transaction_id`) REFERENCES `tb_transaction` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '交易付款应收账单计划表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of tb_payment_plan
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_project
@@ -631,7 +991,7 @@ CREATE TABLE `tb_project`  (
   `greening_rate` decimal(5, 2) NULL DEFAULT NULL COMMENT '绿化率(%)',
   `tags` json NULL COMMENT '项目标签',
   `cover_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '封面图',
-  `coordinate` point NOT NULL,
+  `coordinate` point NULL,
   `longitude` decimal(10, 6) GENERATED ALWAYS AS (st_longitude(`coordinate`)) STORED COMMENT '经度（虚拟列）' NULL,
   `latitude` decimal(10, 6) GENERATED ALWAYS AS (st_latitude(`coordinate`)) STORED COMMENT '纬度（虚拟列）' NULL,
   `status` tinyint NULL DEFAULT 1 COMMENT '状态：1=在售，2=售罄，3=待售，4=下架',
@@ -645,9 +1005,12 @@ CREATE TABLE `tb_project`  (
   INDEX `idx_status`(`status` ASC) USING BTREE,
   INDEX `idx_city_district`(`city` ASC, `district` ASC) USING BTREE,
   INDEX `idx_creator_id`(`creator_id` ASC) USING BTREE,
-  SPATIAL INDEX `sp_idx_project_coordinate`(`coordinate`),
-  CONSTRAINT `fk_project_creator` FOREIGN KEY (`creator_id`) REFERENCES `sys_user` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '楼盘项目表' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `tb_project_ibfk_1` FOREIGN KEY (`creator_id`) REFERENCES `sys_user` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '楼盘项目表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_project
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_project_log
@@ -666,7 +1029,11 @@ CREATE TABLE `tb_project_log`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_project_id`(`project_id` ASC) USING BTREE,
   INDEX `idx_create_time`(`create_time` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '项目变更日志表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '项目变更日志表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of tb_project_log
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_rent_house_extend
@@ -687,8 +1054,12 @@ CREATE TABLE `tb_rent_house_extend`  (
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_house_id`(`house_id` ASC) USING BTREE,
-  CONSTRAINT `fk_rent_house_extend` FOREIGN KEY (`house_id`) REFERENCES `tb_house` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 14 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '租房扩展信息表' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `tb_rent_house_extend_ibfk_1` FOREIGN KEY (`house_id`) REFERENCES `tb_house` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '租房扩展信息表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_rent_house_extend
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_second_house_extend
@@ -711,8 +1082,35 @@ CREATE TABLE `tb_second_house_extend`  (
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_house_id`(`house_id` ASC) USING BTREE,
-  CONSTRAINT `fk_second_house_extend` FOREIGN KEY (`house_id`) REFERENCES `tb_house` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '二手房扩展信息表' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `tb_second_house_extend_ibfk_1` FOREIGN KEY (`house_id`) REFERENCES `tb_house` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '二手房扩展信息表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_second_house_extend
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for tb_sync_failed_log
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_sync_failed_log`;
+CREATE TABLE `tb_sync_failed_log`  (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `event_type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `business_id` int NOT NULL,
+  `payload` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `retry_count` int NOT NULL DEFAULT 0,
+  `next_retry_time` datetime NOT NULL,
+  `status` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'PENDING',
+  `error_msg` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_status_next_retry`(`status` ASC, `next_retry_time` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of tb_sync_failed_log
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_transaction
@@ -750,10 +1148,14 @@ CREATE TABLE `tb_transaction`  (
   INDEX `idx_customer_id`(`customer_id` ASC) USING BTREE,
   INDEX `idx_status`(`status` ASC) USING BTREE,
   INDEX `idx_sales_id`(`sales_id` ASC) USING BTREE,
-  CONSTRAINT `fk_trans_customer` FOREIGN KEY (`customer_id`) REFERENCES `tb_customer` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `fk_trans_house` FOREIGN KEY (`house_id`) REFERENCES `tb_house` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `fk_trans_sales` FOREIGN KEY (`sales_id`) REFERENCES `sys_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 23 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '交易信息表' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `tb_transaction_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `tb_customer` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `tb_transaction_ibfk_2` FOREIGN KEY (`house_id`) REFERENCES `tb_house` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `tb_transaction_ibfk_3` FOREIGN KEY (`sales_id`) REFERENCES `sys_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '交易信息表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_transaction
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_transaction_fee
@@ -772,8 +1174,12 @@ CREATE TABLE `tb_transaction_fee`  (
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_transaction_id`(`transaction_id` ASC) USING BTREE,
-  CONSTRAINT `fk_fee_transaction` FOREIGN KEY (`transaction_id`) REFERENCES `tb_transaction` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT `tb_transaction_fee_ibfk_1` FOREIGN KEY (`transaction_id`) REFERENCES `tb_transaction` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '交易费用表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of tb_transaction_fee
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_transfer_document
@@ -788,8 +1194,12 @@ CREATE TABLE `tb_transfer_document`  (
   `upload_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '上传时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_transfer_id`(`transfer_id` ASC) USING BTREE,
-  CONSTRAINT `fk_document_transfer` FOREIGN KEY (`transfer_id`) REFERENCES `tb_transfer_record` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '过户文件表' ROW_FORMAT = Dynamic;
+  CONSTRAINT `tb_transfer_document_ibfk_1` FOREIGN KEY (`transfer_id`) REFERENCES `tb_transfer_record` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '过户文件表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of tb_transfer_document
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_transfer_record
@@ -810,8 +1220,12 @@ CREATE TABLE `tb_transfer_record`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_transaction_id`(`transaction_id` ASC) USING BTREE,
   INDEX `idx_transfer_no`(`transfer_no` ASC) USING BTREE,
-  CONSTRAINT `fk_transfer_transaction` FOREIGN KEY (`transaction_id`) REFERENCES `tb_transaction` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '过户记录表' ROW_FORMAT = Dynamic;
+  CONSTRAINT `tb_transfer_record_ibfk_1` FOREIGN KEY (`transaction_id`) REFERENCES `tb_transaction` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '过户记录表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of tb_transfer_record
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_user_browse_history
@@ -830,8 +1244,12 @@ CREATE TABLE `tb_user_browse_history`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_user_resource`(`app_user_id` ASC, `resource_type` ASC, `resource_id` ASC) USING BTREE,
   INDEX `idx_browse_time`(`view_time` ASC) USING BTREE,
-  CONSTRAINT `fk_history_app_user` FOREIGN KEY (`app_user_id`) REFERENCES `tb_app_user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 25 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户浏览历史记录表' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `tb_user_browse_history_ibfk_1` FOREIGN KEY (`app_user_id`) REFERENCES `tb_app_user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户浏览历史记录表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_user_browse_history
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_user_favorite
@@ -846,8 +1264,12 @@ CREATE TABLE `tb_user_favorite`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_user_target`(`app_user_id` ASC, `target_type` ASC, `target_id` ASC) USING BTREE,
   INDEX `idx_user_id`(`app_user_id` ASC) USING BTREE,
-  CONSTRAINT `fk_favorite_app_user` FOREIGN KEY (`app_user_id`) REFERENCES `tb_app_user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户收藏记录表' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `tb_user_favorite_ibfk_1` FOREIGN KEY (`app_user_id`) REFERENCES `tb_app_user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户收藏记录表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_user_favorite
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tb_view_record
@@ -873,10 +1295,14 @@ CREATE TABLE `tb_view_record`  (
   INDEX `idx_customer_id`(`customer_id` ASC) USING BTREE,
   INDEX `idx_house_id`(`house_id` ASC) USING BTREE,
   INDEX `idx_sales_id`(`sales_id` ASC) USING BTREE,
-  CONSTRAINT `fk_view_customer` FOREIGN KEY (`customer_id`) REFERENCES `tb_customer` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `fk_view_house` FOREIGN KEY (`house_id`) REFERENCES `tb_house` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `fk_view_sales` FOREIGN KEY (`sales_id`) REFERENCES `sys_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '带看记录表' ROW_FORMAT = DYNAMIC;
+  CONSTRAINT `tb_view_record_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `tb_customer` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `tb_view_record_ibfk_2` FOREIGN KEY (`house_id`) REFERENCES `tb_house` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `tb_view_record_ibfk_3` FOREIGN KEY (`sales_id`) REFERENCES `sys_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '带看记录表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of tb_view_record
+-- ----------------------------
 
 -- ----------------------------
 -- Function structure for fn_check_user_permission
