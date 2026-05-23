@@ -2,13 +2,10 @@ package com.guang.resmsaiservice.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.guang.common.result.CommonResult;
-import com.guang.portal.domain.vo.BrowseHistoryItemVO;
-import com.guang.portal.domain.vo.FavoriteItemVO;
 import com.guang.resmsaiservice.service.AiCustomerService;
 import com.guang.resmsaiservice.service.AiProjectService;
 import com.guang.resmsaiservice.vo.ProjectVo;
 import com.guang.resmsaiservice.vo.UserIntentProfileVO;
-import com.guang.trade.domain.vo.FollowUpVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -36,33 +33,7 @@ public class AiServiceController {
         return CommonResult.success(aiProjectService.listAllProjectsWithHouses());
     }
 
-    @Operation(summary = "分页获取指定用户的收藏列表（供 AI 分析偏好）")
-    @GetMapping("/customer/favorites")
-    public CommonResult<Page<FavoriteItemVO>> pageFavorites(
-            @RequestParam Long userId,
-            @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
-        return CommonResult.success(aiCustomerService.pageFavorites(userId, pageNum, pageSize));
-    }
 
-    @Operation(summary = "分页获取指定用户的浏览记录（供 AI 分析偏好）")
-    @GetMapping("/customer/history")
-    public CommonResult<Page<BrowseHistoryItemVO>> pageHistory(
-            @RequestParam Long userId,
-            @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize,
-            @RequestParam(required = false) Byte resourceType) {
-        return CommonResult.success(aiCustomerService.pageHistory(userId, pageNum, pageSize, resourceType));
-    }
-
-    @Operation(summary = "分页查询指定用户的预约（供 AI 提醒/查询）")
-    @GetMapping("/customer/appointments")
-    public CommonResult<Page<FollowUpVO>> pageMyAppointments(
-            @RequestParam Long userId,
-            @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
-        return CommonResult.success(aiCustomerService.pageMyAppointments(userId, pageNum, pageSize));
-    }
 
     @Operation(summary = "获取用户意向画像（含行为权重评分、特征聚合、区县均价指数）")
     @GetMapping("/customer/profile")

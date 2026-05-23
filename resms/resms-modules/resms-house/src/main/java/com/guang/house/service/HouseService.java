@@ -62,4 +62,9 @@ public interface HouseService extends IService<House> {
      * 获取房源统计概览（顶部看板）
      */
     HouseStatisticsVO getStatistics();
+
+    /**
+     * 手动触发同步房源数据到 AI 系统
+     */
+    void publishHouseSyncEvent(Integer houseId, String customAction);
 }

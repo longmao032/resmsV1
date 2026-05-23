@@ -22,6 +22,9 @@ import com.guang.house.mapper.HouseMapper;
 import com.guang.house.mapper.ProjectMapper;
 import com.guang.house.service.ProjectLogService;
 import com.guang.house.service.ProjectService;
+import com.guang.common.dto.ProjectSyncDTO;
+import com.guang.common.event.ProjectSyncEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -52,6 +55,7 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
 
     private final ProjectLogService projectLogService;
     private final HouseMapper houseMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public Page<ProjectVO> pageProjects(ProjectQueryDTO queryDTO) {
@@ -173,6 +177,28 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
 
         if (success) {
             recordChangeLog(project, oldProject);
+            try {
+                ProjectSyncDTO dto = new ProjectSyncDTO();
+                dto.setEventId(java.util.UUID.randomUUID().toString());
+                dto.setEventTime(System.currentTimeMillis());
+                dto.setAction(project.getIsDeleted() != null && project.getIsDeleted() == 1 ? "DELETE" : "SAVE");
+                dto.setProjectId(project.getId());
+                dto.setProjectName(project.getProjectName());
+                dto.setCity(project.getCity());
+                dto.setDistrict(project.getDistrict());
+                dto.setAddress(project.getAddress());
+                dto.setDeveloper(project.getDeveloper());
+                dto.setPropertyCompany(project.getPropertyCompany());
+                dto.setTotalHouseholds(project.getTotalHouseholds());
+                dto.setPropertyFee(project.getPropertyFee());
+                dto.setPlotRatio(project.getPlotRatio());
+                dto.setGreeningRate(project.getGreeningRate());
+                dto.setTags(project.getTags());
+                dto.setCoverUrl(project.getCoverUrl());
+                eventPublisher.publishEvent(new ProjectSyncEvent(this, dto));
+            } catch (Exception e) {
+                log.error("发布楼盘同步事件异常", e);
+            }
         }
 
         return success;

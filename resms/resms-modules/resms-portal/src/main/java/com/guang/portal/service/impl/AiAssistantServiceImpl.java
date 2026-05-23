@@ -2,6 +2,7 @@ package com.guang.portal.service.impl;
 
 import com.guang.portal.domain.vo.AiChatVO;
 import com.guang.portal.domain.vo.HouseItemVO;
+import com.guang.portal.domain.vo.ProjectItemVO;
 import com.guang.portal.service.AiAssistantService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -79,10 +80,35 @@ public class AiAssistantServiceImpl implements AiAssistantService {
                 recommendations.add(HouseItemVO.builder()
                         .houseId((String) rec.get("houseId"))
                         .projectName((String) rec.get("projectName"))
+                        .district((String) rec.get("district"))
                         .price((String) rec.get("price"))
                         .layout((String) rec.get("layout"))
                         .area((String) rec.get("area"))
-                        .coverImage((String) rec.get("coverImage"))
+                        .coverImage((String) rec.get("coverUrl"))
+                        .sellingPoint((String) rec.get("sellingPoint"))
+                        .build());
+            }
+        }
+
+        // 解析楼盘/小区推荐列表
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> projectRecs = (List<Map<String, Object>>) data.get("projects");
+        List<ProjectItemVO> projects = new ArrayList<>();
+        if (projectRecs != null) {
+            for (Map<String, Object> prj : projectRecs) {
+                projects.add(ProjectItemVO.builder()
+                        .projectId((String) prj.get("projectId"))
+                        .projectName((String) prj.get("projectName"))
+                        .district((String) prj.get("district"))
+                        .address((String) prj.get("address"))
+                        .developer((String) prj.get("developer"))
+                        .houseCount((String) prj.get("houseCount"))
+                        .priceRange((String) prj.get("priceRange"))
+                        .areaRange((String) prj.get("areaRange"))
+                        .layouts((String) prj.get("layouts"))
+                        .tags((String) prj.get("tags"))
+                        .coverImage((String) prj.get("coverUrl"))
+                        .sellingPoint((String) prj.get("sellingPoint"))
                         .build());
             }
         }
@@ -91,7 +117,8 @@ public class AiAssistantServiceImpl implements AiAssistantService {
                 .reply(reply)
                 .sessionId(aiSessionId)
                 .recommendations(recommendations)
-                .blocks(parseBlocks(reply, recommendations))
+                .projects(projects)
+                .blocks(parseBlocks(reply, recommendations, projects))
                 .build();
     }
 
@@ -99,7 +126,8 @@ public class AiAssistantServiceImpl implements AiAssistantService {
      * 从结构化推荐数据构建 ChatBlock 列表。
      * 视图层逻辑集中在前端，后端仅提供干净的块结构。
      */
-    private List<AiChatVO.ChatBlock> parseBlocks(String reply, List<HouseItemVO> recommendations) {
+    private List<AiChatVO.ChatBlock> parseBlocks(String reply, List<HouseItemVO> recommendations,
+                                                 List<ProjectItemVO> projects) {
         List<AiChatVO.ChatBlock> blocks = new ArrayList<>();
 
         // 文本块：AI 的暖心导购话术
@@ -110,7 +138,7 @@ public class AiAssistantServiceImpl implements AiAssistantService {
                     .build());
         }
 
-        // 房源卡片块：从结构化数据构建，不依赖文本解析
+        // 房源卡片块
         if (recommendations != null && !recommendations.isEmpty()) {
             List<String> houseIds = new ArrayList<>();
             for (HouseItemVO rec : recommendations) {
@@ -124,6 +152,13 @@ public class AiAssistantServiceImpl implements AiAssistantService {
                         .houseIds(houseIds)
                         .build());
             }
+        }
+
+        // 楼盘卡片块
+        if (projects != null && !projects.isEmpty()) {
+            blocks.add(AiChatVO.ChatBlock.builder()
+                    .type("project_cards")
+                    .build());
         }
 
         return blocks;

@@ -23,6 +23,9 @@ public class AiChatVO {
     @Schema(description = "结构化房源推荐列表")
     private List<HouseItemVO> recommendations;
 
+    @Schema(description = "结构化楼盘/小区推荐列表")
+    private List<ProjectItemVO> projects;
+
     @Schema(description = "分块渲染内容")
     private List<ChatBlock> blocks;
 

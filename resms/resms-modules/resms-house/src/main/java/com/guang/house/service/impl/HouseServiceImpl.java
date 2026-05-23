@@ -24,6 +24,10 @@ import com.guang.house.domain.vo.HouseVO;
 import com.guang.house.entity.*;
 import com.guang.house.mapper.HouseMapper;
 import com.guang.house.service.*;
+import com.guang.common.dto.HouseSyncDTO;
+import com.guang.common.event.HouseSyncEvent;
+import com.guang.common.event.HouseSyncBatchEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +54,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements HouseService {
 
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(HouseServiceImpl.class);
+
     private final ProjectService projectService;
     private final NewHouseExtendService newHouseExtendService;
     private final SecondHouseExtendService secondHouseExtendService;
@@ -57,6 +63,7 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
     private final HouseStatusLogService houseStatusLogService;
     private final HouseImageService houseImageService;
     private final FileProperties fileProperties;
+    private final ApplicationEventPublisher eventPublisher;
 
 
     @Override
@@ -377,6 +384,9 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
         // 7. 处理扩展表
         saveExtensions(house.getId(), saveDTO);
 
+        // 发布实时同步事件
+        publishHouseSyncEvent(house.getId(), null);
+
         return true;
     }
 
@@ -415,6 +425,9 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
         log.setCreateTime(LocalDateTime.now());
         houseStatusLogService.save(log);
 
+        // 发布实时同步事件
+        publishHouseSyncEvent(id, null);
+
         return true;
     }
 
@@ -449,6 +462,9 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
             logEntity.setOperatorName(SecurityUtils.getUsername() != null ? SecurityUtils.getUsername() : "System");
             logEntity.setCreateTime(LocalDateTime.now());
             houseStatusLogService.save(logEntity);
+            
+            // 发布实时同步事件
+            publishHouseSyncEvent(auditDTO.getId(), null);
         }
 
         return success;
@@ -650,6 +666,73 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
                 house.setPriceUnit((byte) 2);
                 house.setPrice(BigDecimal.valueOf(house.getTotalPriceFen()).divide(BigDecimal.valueOf(1_000_000L), 2, RoundingMode.HALF_UP));
             }
+        }
+    }
+
+    @Override
+    public void publishHouseSyncEvent(Integer houseId, String customAction) {
+        try {
+            House house = this.getById(houseId);
+            if (house == null) return;
+            
+            HouseSyncDTO dto = new HouseSyncDTO();
+            dto.setEventId(UUID.randomUUID().toString());
+            dto.setEventTime(System.currentTimeMillis());
+            
+            String action = customAction;
+            if (action == null) {
+                action = "SAVE";
+                if ((house.getIsDeleted() != null && house.getIsDeleted() == 1) || 
+                    (house.getStatus() != null && (house.getStatus() == 2 || house.getStatus() == 3 || house.getStatus() == 4))) {
+                    action = "DELETE";
+                }
+            }
+            dto.setAction(action);
+            dto.setHouseId(house.getId());
+            dto.setProjectId(house.getProjectId());
+            dto.setProjectName(house.getProjectName());
+            dto.setCity(house.getCity());
+            dto.setDistrict(house.getDistrict());
+            
+            // 查询第一张图作为封面
+            LambdaQueryWrapper<HouseImage> queryWrapper = new LambdaQueryWrapper<HouseImage>()
+                    .eq(HouseImage::getHouseId, house.getId())
+                    .orderByAsc(HouseImage::getSortOrder)
+                    .last("LIMIT 1");
+            HouseImage coverImage = houseImageService.getOne(queryWrapper);
+            if (coverImage != null) {
+                dto.setCoverImage(coverImage.getFileKey());
+            } else {
+                Project project = projectService.getById(house.getProjectId());
+                if (project != null) {
+                    dto.setCoverImage(project.getCoverUrl());
+                }
+            }
+            
+            dto.setHouseType(house.getHouseType());
+            dto.setRoomType(house.getLayout());
+            
+            String priceText = "";
+            if (house.getHouseType() == 3) {
+                priceText = house.getRentPriceFen() != null ? (house.getRentPriceFen() / 100) + "元/月" : "价格面议";
+            } else {
+                priceText = house.getTotalPriceFen() != null ? (house.getTotalPriceFen() / 1_000_000.0) + "万" : 
+                            (house.getUnitPriceFen() != null ? (house.getUnitPriceFen() / 100) + "元/㎡" : "价格面议");
+            }
+            dto.setPriceText(priceText);
+            
+            dto.setAreaText(house.getArea() != null ? house.getArea() + "㎡" : "");
+            dto.setOrientation(house.getOrientation());
+            
+            String floorInfo = (house.getFloor() != null ? "第" + house.getFloor() + "层" : "") 
+                             + (house.getTotalFloor() != null ? "/共" + house.getTotalFloor() + "层" : "");
+            dto.setFloorInfo(floorInfo);
+            dto.setTags(house.getTags());
+            dto.setDescription(house.getDescription());
+            
+            eventPublisher.publishEvent(new HouseSyncEvent(this, dto));
+        } catch (Exception e) {
+            logger.error("发布房源同步事件发生异常, houseId={}", houseId, e);
         }
     }
 }

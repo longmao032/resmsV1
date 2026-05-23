@@ -18,6 +18,9 @@ public class HouseItemVO {
     @Schema(description = "项目名称")
     private String projectName;
 
+    @Schema(description = "所在区域")
+    private String district;
+
     @Schema(description = "售价/租金")
     private String price;
 
@@ -29,4 +32,7 @@ public class HouseItemVO {
 
     @Schema(description = "封面图URL")
     private String coverImage;
+
+    @Schema(description = "AI 推荐理由")
+    private String sellingPoint;
 }

@@ -53,4 +53,7 @@ public class HouseAiVo implements Serializable {
 
     @Schema(description = "核心卖点/描述")
     private String description;
+
+    @Schema(description = "房源封面图完整URL")
+    private String coverUrl;
 }

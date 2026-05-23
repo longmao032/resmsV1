@@ -4,4 +4,44 @@ server:
 spring:
   profiles:
     active: dev
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_NAME:resms}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf-8
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PWD:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PWD:}
+      database: ${REDIS_DB:0}
+
+  # 文件上传大小限制
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# JWT配置
+jwt:
+  # JWT 密钥，HS512 算法要求密钥长度至少为 64 个字符 (512 bits)
+  secret: ${JWT_SECRET:guang-resms-system-secret-key-must-be-at-least-64-characters-long-for-hs512}
+  expiration: 86400000
+
+# AI 助手服务配置
+ai:
+  assistant:
+    base-url: ${AI_ASSISTANT_URL:http://localhost:9090}
+
+# 文件配置
+resms:
+  file:
+    # 公共资源存储路径 (头像、房源图片等)
+    path: ${RESMS_FILE_PATH:./upload/public}
+    # 公共资源访问前缀
+    prefix: /api/profile
+    # 私有资源存储路径 (合同、备份等，不可通过 URL 直接访问)
+    private-path: ${RESMS_PRIVATE_PATH:./upload/private}
+    # 临时文件存储路径
+    temp-path: ${RESMS_TEMP_PATH:./upload/temp}
